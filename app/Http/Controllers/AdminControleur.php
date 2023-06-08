@@ -114,14 +114,61 @@ class AdminControleur extends Controller
 
         $email = htmlspecialchars($request->input('email'));
         if(AdminControleur::verifEmail($email)){
-            //A FAIRE
+            //à faire par RAPH
         }
 
         $_SESSION['notifEmail'] = "cette adresse mail n'est pas pour l'administrateur";
         return view('admin.email');
     }
 
-    
+    //méthode permettant de chamger le mot de passe
+    public function changerMdp(Request $requset){
+        //à faire par GLORIA, bonne chance...
+    }
+
+    //méthode d'ajout d'une chambre
+    public function ajouterChambre(Request $request){
+        //à faire par...
+    }
+
+    //méthode d'ajout d'une classe
+    public function ajouterClasse(Request $request){
+        //à faire par...
+    }
+
+    //methode d'ajouter d'une photo
+    public function ajouterPhoto(Request $request){
+        //à faire par...
+    }
+
+    //methode d'ajouter d'une video
+    public function ajouterVideo(Request $request){
+        //à faire par...
+    }
+
+    //methode du changement d'etat d'une chambre
+    public function changerEtat(Request $request){
+        //à faire par...
+    }
+
+    //methode de la modification d'une classe
+    public function modifierClasse(Request $request){
+        //à faire par...
+    }
+
+    //methode de la modification d'une chambre
+    public function modifierChambre(Request $request){
+        //à faire par...
+    }
+    //methode de la suppression d'une chambre
+    public function supprimerChambre(Request $request){
+        //à faire par...
+    }
+
+    //methode de la suppression d'une classe
+    public function supprimerClasse(Request $request){
+        //à faire par...
+    }
     //cette méthode vérifie si pseudo et le mot de passe de l'admin sont dans la base de donnée ou pas
     private function verifAuth($pseudo, $mdp): bool{
         $admin = new Admin;
