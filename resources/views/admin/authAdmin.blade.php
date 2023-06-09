@@ -3,6 +3,7 @@
 
 @section('body')
 <h1>Authentification de l'admin</h1>
+<?php if(isset($_SESSION['notifEmail'])) echo $_SESSION['notifEmail'];?>
 <form action="formulaireAuth" method="post">
     @csrf
     <label for="pseudo">Entrez le pseudo</label>

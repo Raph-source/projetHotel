@@ -7,11 +7,14 @@ use Illuminate\View\View;
 use App\Models\Admin;
 use Illuminate\Support\Facades\Validator;
 
-//Import PHPMailer classes into the global namespace
-//These must be at the top of your script, not inside a function
+//importation de phpmailer
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
+require 'PHPmailer/src/Exception.php';
+require 'PHPmailer/src/PHPMailer.php';
+
+require 'PHPMailer/src/SMTP.php';
 
 session_start();
 
@@ -101,7 +104,7 @@ class AdminControleur extends Controller
        
     }
     //la permet à l'admin de récuperer son mot de passe en cas d'oubli
-    public function getMdp(Request $request): View{
+    public function recupererMdp(Request $request): View{
         //verification des champs
         $vaidator = Validator::make($request->all(), [
             'email' => 'required|email'
@@ -112,9 +115,16 @@ class AdminControleur extends Controller
             return view('admin.email');
         }
 
+
         $email = htmlspecialchars($request->input('email'));
+        //verification que l'adresse soit bien celle l'admin
         if(AdminControleur::verifEmail($email)){
-            //à faire par RAPH
+            $mdp = AdminControleur::getMdp($email);
+            //l'envoi du mail
+            $sujet = "Récuperation du mot de passe";
+            $message = "voici votre mot de passe: <strong>".$mdp."</strong>";
+            AdminControleur::envoyerEmail($email, $sujet, $message);
+            return view('admin.authAdmin');
         }
 
         $_SESSION['notifEmail'] = "cette adresse mail n'est pas pour l'administrateur";
@@ -182,53 +192,51 @@ class AdminControleur extends Controller
     //cette méthode vérifie si l'adresse mail entée par l'admin lors de la procedure de mot de passe oublé est correcte
     private function verifEmail($email): bool{
         $admin = new Admin;
-        $trouver = $admin->all('email')->where('email','=', $email);
+        $trouver = $admin->all(['email'])->where('email','=', $email);
+        
         if(count($trouver) != 0)
             return true;
         return false;
     }
 
-    private function envoyerEmail(){
-
-        //Load Composer's autoloader
-        require 'vendor/autoload.php';
-
+    private function getMdp($email){
+        $admin = new Admin;
+        $trouver = $admin->where('email','=', $email)->get('mdp');
+       
+        return $trouver[0]->mdp;
+    }
+    private function envoyerEmail($email, $sujet, $message){
         //Create an instance; passing `true` enables exceptions
         $mail = new PHPMailer(true);
 
         try {
-            //Server settings
-            $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-            $mail->isSMTP();                                            //Send using SMTP
-            $mail->Host       = 'smtp.example.com';                     //Set the SMTP server to send through
-            $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-            $mail->Username   = 'user@example.com';                     //SMTP username
-            $mail->Password   = 'secret';                               //SMTP password
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
-            $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+            
+            //$mail->SMTPDebug = SMTP::DEBUG_SERVER;                      
+            $mail->isSMTP();                                           
+            $mail->Host       = 'smtp.gmail.com';                     
+            $mail->SMTPAuth   = true;                                  
+            $mail->Username   = 'raphilunga00@gmail.com';             
+            $mail->Password   = 'ftznsrdvogjtkgxp';                  
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;         
+            $mail->Port       = 465; 
 
-            //Recipients
-            $mail->setFrom('from@example.com', 'Mailer');
-            $mail->addAddress('joe@example.net', 'Joe User');     //Add a recipient
-            $mail->addAddress('ellen@example.com');               //Name is optional
-            $mail->addReplyTo('info@example.com', 'Information');
-            $mail->addCC('cc@example.com');
-            $mail->addBCC('bcc@example.com');
+            $mail->setFrom('raphilunga00@gmail.com', 'raph');
+            $mail->addAddress($email, '');     
+            
+            /*$mail->addCC('cc@example.com');
+            $mail->addBCC('bcc@example.com');*/
 
-            //Attachments
-            $mail->addAttachment('/var/tmp/file.tar.gz');         //Add attachments
-            $mail->addAttachment('/tmp/image.jpg', 'new.jpg');    //Optional name
-
-            //Content
-            $mail->isHTML(true);                                  //Set email format to HTML
-            $mail->Subject = 'Here is the subject';
-            $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
-            $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+            //$mail->addAttachment('/var/tmp/file.tar.gz');      
+            //$mail->addAttachment('photo.jpg', 'new.jpg');   
+            
+            $mail->isHTML(true);                                  
+            $mail->Subject = $sujet;
+            $mail->Body    = $message;
 
             $mail->send();
-            echo 'Message has been sent';
+            $_SESSION['notifEmail'] = 'Verifier votre boite mail';
         } catch (Exception $e) {
-            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            $_SESSION['notifEmail'] = 'Nous n\'avons pas effectuer l\'envoi du mail';
         }
     }
 }

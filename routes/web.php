@@ -28,5 +28,5 @@ Route::controller(AdminControleur::class)->group(function(){
     Route::get('formulaireEmail', function(){
         return view('admin.email');
     });
-    Route::post('mot-de-passe-oublié', 'getMdp');
+    Route::post('mot-de-passe-oublié', 'recupererMdp');
 });
