@@ -3,8 +3,8 @@
 
 @section('body')
 <h1>Authentification de l'admin</h1>
-<?php if(isset($_SESSION['notifEmail'])) echo $_SESSION['notifEmail'];?>
-<form action="formulaireAuth" method="post">
+<?php if(isset($_SESSION['notifAuth'])) echo $_SESSION['notifAuth'];?>
+<form action="formulaire-authentification" method="post">
     @csrf
     <label for="pseudo">Entrez le pseudo</label>
     <input type="text" name="pseudo" ><br>
@@ -12,8 +12,8 @@
     <input type="password" name="mdp" id="" ><br>
     <label for="connexionAuto">Se connecter automatiquement</label>
     <input type="radio" name="connexionAuto" id=""><br>
-    <a href="formulaireEmail"> j'ai oublié le mot de passe</a><br>
+    <a href="mot-de-passe-oublié"> j'ai oublié le mot de passe</a><br>
     <input type="submit">
 </form>
-<?php if(isset($_SESSION['notifAuth'])) echo $_SESSION['notification'];?>
+<?php if(isset($_SESSION['notifAuth'])) echo $_SESSION['notifAuth'];?>
 @endsection

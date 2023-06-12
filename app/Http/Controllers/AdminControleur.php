@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use App\Models\Admin;
 use Illuminate\Support\Facades\Validator;
+
+use App\Models\Admin;
+use App\Models\ClasseChambre;
 
 //importation de phpmailer
 use PHPMailer\PHPMailer\PHPMailer;
@@ -13,7 +15,6 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 require 'PHPmailer/src/Exception.php';
 require 'PHPmailer/src/PHPMailer.php';
-
 require 'PHPMailer/src/SMTP.php';
 
 session_start();
@@ -36,7 +37,7 @@ class AdminControleur extends Controller
     //la méthode inscript un admin
     public function inscription(Request $request):View{
                 
-        //vérification des champs
+        //vérification des champs du formulaire
         $verifAuth = Validator::make($request->all(), [
             'pseudo' => 'required',
             'email' => 'required|email',
@@ -47,20 +48,19 @@ class AdminControleur extends Controller
             return view('admin.inscription');
         }
         
-        //enregitrement du l'admin
+        //bloquer les injections
         $pseudo = htmlspecialchars($request->input('pseudo'));
         $email = htmlspecialchars($request->input('email'));
         $mdp = htmlspecialchars($request->input('mdp'));
 
+        //enregistement de l'admin
         $admin = new Admin;
-
         $admin->pseudo = $pseudo;
         $admin->email = $email;
         $admin->mdp = $mdp;
-
         $admin->save();
 
-        return view('admin.home');
+        return view('admin.option.home');
     }
     //la méthode authentifie un admin
     public function authentification(Request $request):View{
@@ -74,22 +74,22 @@ class AdminControleur extends Controller
 
         }
         else{
-             //verifAuth des champs
-            $verifAuth = Validator::make($request->all(), [
+             //verifAuth des champs du formulaire
+            $vaidator = Validator::make($request->all(), [
                 'pseudo' => 'required',
                 'mdp' => 'required'
             ]);
-
-            if($verifAuth->fails()){
-                $_SESSION['notification'] = 'Erreur des champs';
+            if($vaidator->fails()){
+                $_SESSION['notifAuth'] = 'Erreur des champs';
                 return view('admin.authAdmin');
             }
-
+            
+            //bloquer les injections
             $pseudo = htmlspecialchars($request->input('pseudo'));
             $mdp = htmlspecialchars($request->input('mdp'));
 
+            //verifier que le pseudo et le mdp soient ceux de l'admin
             if(AdminControleur::verifAuth($pseudo, $mdp)){
-
                 //si l'admin choisi de se connecter automatiqument
                 if(array_key_exists('connexionAuto', $request->all())){
                     setcookie('pseudo', $pseudo, time() + 2 * 24 * 3600, null, null, false, true);
@@ -105,18 +105,18 @@ class AdminControleur extends Controller
     }
     //la permet à l'admin de récuperer son mot de passe en cas d'oubli
     public function recupererMdp(Request $request): View{
-        //verification des champs
+        //verification des champs du formulaire
         $vaidator = Validator::make($request->all(), [
             'email' => 'required|email'
         ]);
-
         if($vaidator->fails()){
             $_SESSION['notifEmail'] = 'Remplissez tout les champs';
             return view('admin.email');
         }
 
-
+        //bloquer les injections
         $email = htmlspecialchars($request->input('email'));
+
         //verification que l'adresse soit bien celle l'admin
         if(AdminControleur::verifEmail($email)){
             $mdp = AdminControleur::getMdp($email);
@@ -128,22 +128,50 @@ class AdminControleur extends Controller
         }
 
         $_SESSION['notifEmail'] = "cette adresse mail n'est pas pour l'administrateur";
-        return view('admin.email');
+        return view('admin.motDePasseOublie');
     }
 
     //méthode permettant de chamger le mot de passe
     public function changerMdp(Request $requset){
         //à faire par GLORIA, bonne chance...
     }
-
+    //méthode qui amène au fomulaire d'ajout de chambre
+    public function getFormulaireAjoutertChambre(){
+        return view('admin.option.ajouterChambre', ['classeChambre' => ClasseChambre::all()]);
+    }
     //méthode d'ajout d'une chambre
     public function ajouterChambre(Request $request){
         //à faire par...
     }
 
-    //méthode d'ajout d'une classe
-    public function ajouterClasse(Request $request){
-        //à faire par...
+    //méthode d'ajout d'une classe de chambre
+    public function ajouterClasse(Request $request): View{
+        //verification des champs du formulaire
+        $validator = Validator::make($request->all(), [
+            'nom' => 'required',
+            'description' => 'required',
+            'prix' => 'required|numeric'
+        ]);
+        if($validator->fails()){
+            $_SESSION['notifAjoutClasse'] = "Erreur des champs";
+            return view('admin.option.ajouterClasse');
+        }
+        
+        //bloquer les injections
+        $nom = htmlspecialchars($request->input('nom'));
+        $description = htmlspecialchars($request->input('description'));
+        $prix = htmlspecialchars($request->input('prix'));
+
+        //inserion de la classe dans la bdd
+        $classeChambe = new ClasseChambre;
+        $classeChambe->nom = $nom;
+        $classeChambe->description = $description;
+        $classeChambe->prix = $prix;
+        $classeChambe->save();
+        
+        $_SESSION['notifHome'] = 'la classe à été ajoutée';
+        return view('admin.option.home');
+
     }
 
     //methode d'ajouter d'une photo
@@ -200,8 +228,7 @@ class AdminControleur extends Controller
     }
 
     private function getMdp($email){
-        $admin = new Admin;
-        $trouver = $admin->where('email','=', $email)->get('mdp');
+        $trouver = Admin::where('email','=', $email)->get('mdp');
        
         return $trouver[0]->mdp;
     }
@@ -220,6 +247,9 @@ class AdminControleur extends Controller
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;         
             $mail->Port       = 465; 
 
+            //recuperation de l'adresse mail de l'admin
+            $emailAdmin = Admin::all('email');
+            dd($emailAdmin);
             $mail->setFrom('raphilunga00@gmail.com', 'raph');
             $mail->addAddress($email, '');     
             

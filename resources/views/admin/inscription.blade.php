@@ -3,7 +3,7 @@
 
 @section('body')
 <h1>Inscription de l'admin</h1>
-<form action="formulaireInscription" method="post">
+<form action="formulaire-inscription" method="post">
     @csrf
     <label for="pseudo">Entrez le pseudo</label>
     <input type="text" name="pseudo" ><br>

@@ -23,10 +23,13 @@ Route::get('/', function () {
 //LES ROUTES DE L'ADMIN
 Route::controller(AdminControleur::class)->group(function(){
     Route::get('je suis l\'admin de cette hotel', 'welcome');
-    Route::post('formulaireInscription', 'inscription');
-    Route::post('formulaireAuth', 'authentification');
-    Route::get('formulaireEmail', function(){
-        return view('admin.email');
-    });
-    Route::post('mot-de-passe-oublié', 'recupererMdp');
+    Route::get('mot-de-passe-oublié', function(){return view('admin.motDePasseOublie');});
+    Route::get('ajouter-classe-chambre', function(){return view('admin.option.ajouterClasse');});
+    Route::get('ajouter-chambre', 'getFormulaireAjoutertChambre');
+
+    Route::post('formulaire-inscription', 'inscription');
+    Route::post('formulaire-authentification', 'authentification');
+    Route::post('formulaire-de-passe-oublié', 'recupererMdp');
+    Route::post('formulaire-ajout-classe-chambre', 'ajouterClasse');
+    Route::post('formulaire-ajouter-chambre', 'ajouterChambre');
 });
