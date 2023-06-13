@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 use App\Models\Admin;
 use App\Models\ClasseChambre;
+use App\Models\Chambre;
 
 //importation de phpmailer
 use PHPMailer\PHPMailer\PHPMailer;
@@ -111,7 +112,7 @@ class AdminControleur extends Controller
         ]);
         if($vaidator->fails()){
             $_SESSION['notifEmail'] = 'Remplissez tout les champs';
-            return view('admin.email');
+            return view('admin.motDePasseOublie');
         }
 
         //bloquer les injections
@@ -136,12 +137,50 @@ class AdminControleur extends Controller
         //à faire par GLORIA, bonne chance...
     }
     //méthode qui amène au fomulaire d'ajout de chambre
-    public function getFormulaireAjoutertChambre(){
+    public function getFormulaireAjoutertChambre(): View{
         return view('admin.option.ajouterChambre', ['classeChambre' => ClasseChambre::all()]);
     }
     //méthode d'ajout d'une chambre
     public function ajouterChambre(Request $request){
-        //à faire par...
+        //verification des champs du formulaire
+        $validator = Validator::make($request->all(), [
+            'numPorte' => 'required',
+            'classeChambre' => [
+                'required',
+                'regex:/^[A-C]{1}$/'
+            ]
+        ]);
+
+        if($validator->fails()){
+            $_SESSION['notifAjoutChambre'] = "Erreur des champs";
+            return view('admin.option.ajouterChambre', ['classeChambre' => ClasseChambre::all()]);
+        }
+
+        //bloquer les injections
+        $numPorte = htmlspecialchars($request->input('numPorte'));
+        $classeChambre = strtoupper(htmlspecialchars($request->input('classeChambre')));
+
+        //récuperation de l'id de la classe de chambre
+        $collection = ClasseChambre::where('nom', '=', $classeChambre)->get('id');
+        $idClasseChambre = $collection[0]->id;
+        
+        //bloquer les doublons
+        $trouver = Chambre::where(
+            'numPorte', '=', $numPorte)->get('numPorte');
+        if(count($trouver) != 0){
+            $_SESSION['notifAjoutChambre'] = "cette chambre existe déjà";
+            return view('admin.option.ajouterChambre', ['classeChambre' => ClasseChambre::all()]);
+        }
+
+        //enregistrement de la chambre dans la bdd
+        $chambre = new Chambre;
+        $chambre->numPorte = $numPorte;
+        $chambre->idClasseChambre = $idClasseChambre;
+        $chambre->save();
+
+        $_SESSION['notifHome'] = "la chambre à été ajouter";
+        return view('admin.option.home');
+
     }
 
     //méthode d'ajout d'une classe de chambre
@@ -158,20 +197,28 @@ class AdminControleur extends Controller
         }
         
         //bloquer les injections
-        $nom = htmlspecialchars($request->input('nom'));
-        $description = htmlspecialchars($request->input('description'));
+        $nom = strtoupper(htmlspecialchars($request->input('nom')));
+        $description = strtolower(htmlspecialchars($request->input('description')));
         $prix = htmlspecialchars($request->input('prix'));
 
         //inserion de la classe dans la bdd
-        $classeChambe = new ClasseChambre;
-        $classeChambe->nom = $nom;
-        $classeChambe->description = $description;
-        $classeChambe->prix = $prix;
-        $classeChambe->save();
+        $trouver = ClasseChambre::where('nom', '=', $nom)
+                                  ->orWhere('description', '=', $description)
+                                  ->orWhere('prix', '=', $prix)->get();
         
-        $_SESSION['notifHome'] = 'la classe à été ajoutée';
-        return view('admin.option.home');
+        if(count($trouver) == 0){
+            $classeChambre = new ClasseChambre;
+            $classeChambre->nom = $nom;
+            $classeChambre->description = $description;
+            $classeChambre->prix = $prix;
+            $classeChambre->save();
 
+            $_SESSION['notifHome'] = 'la classe à été ajoutée';
+            return view('admin.option.home');
+        }
+    
+        $_SESSION['notifAjoutClasse'] = "Ne mettez les informations existant dans une autre classe de chambre";
+        return view('admin.option.ajouterClasse');
     }
 
     //methode d'ajouter d'une photo
@@ -248,9 +295,9 @@ class AdminControleur extends Controller
             $mail->Port       = 465; 
 
             //recuperation de l'adresse mail de l'admin
-            $emailAdmin = Admin::all('email');
-            dd($emailAdmin);
-            $mail->setFrom('raphilunga00@gmail.com', 'raph');
+            $admin = Admin::all('email');
+            $emailAdmin = $admin[0]->email;
+            $mail->setFrom($emailAdmin, 'raph');
             $mail->addAddress($email, '');     
             
             /*$mail->addCC('cc@example.com');
@@ -264,7 +311,7 @@ class AdminControleur extends Controller
             $mail->Body    = $message;
 
             $mail->send();
-            $_SESSION['notifEmail'] = 'Verifier votre boite mail';
+            $_SESSION['notifAuth'] = 'Verifier votre boite mail';
         } catch (Exception $e) {
             $_SESSION['notifEmail'] = 'Nous n\'avons pas effectuer l\'envoi du mail';
         }
