@@ -136,10 +136,12 @@ class AdminControleur extends Controller
     public function changerMdp(Request $requset){
         //à faire par GLORIA, bonne chance...
     }
-    //méthode qui amène au fomulaire d'ajout de chambre
-    public function getFormulaireAjoutertChambre(): View{
+
+    //méthode qui retourne le fomulaire d'ajout de chambre
+    public function getFormulaireAjouterChambre(): View{
         return view('admin.option.ajouterChambre', ['classeChambre' => ClasseChambre::all()]);
     }
+
     //méthode d'ajout d'une chambre
     public function ajouterChambre(Request $request){
         //verification des champs du formulaire
@@ -235,10 +237,37 @@ class AdminControleur extends Controller
     public function changerEtat(Request $request){
         //à faire par...
     }
+    //méthode retourne le formulaire de modification d'une chambre
+    public function getFormulaireModifierClasse(): View{
+        return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambre::all()]);
+    }
 
     //methode de la modification d'une classe
     public function modifierClasse(Request $request){
-        //à faire par...
+        //verification des champs du formulaire
+        $validator = Validator::make($request->all(), [
+            'classeChambre' => 'required',
+            'nouvDesc' => 'required',
+            'nouvPrix' => 'required|numeric'
+        ]);
+        if($validator->fails()){
+            $_SESSION['notifModifClasse'] = "Erreur des champs";
+            return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambre::all()]);
+        }
+
+        //bloquer les injections
+        $classeChambre = strtoupper(htmlspecialchars($request->input('classeChambre')));
+        $nouvDesc = strtolower(htmlspecialchars($request->input('nouvDesc')));
+        $nouvPrix = htmlspecialchars($request->input('nouvPrix'));
+
+        //verification du prix et la description du formulaire (doivent être != ici...)
+        if($nouvDesc == 'ici...' || $nouvPrix == 'ici...'){
+            $_SESSION['notifModifClasse'] = "Erreur des champs";
+            return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambre::all()]);
+        }
+
+        //pas encore finis
+
     }
 
     //methode de la modification d'une chambre
