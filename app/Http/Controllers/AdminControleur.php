@@ -266,7 +266,7 @@ class AdminControleur extends Controller
             return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambre::all()]);
         }
 
-        //pas encore finis
+        //toujour encours
 
     }
 
