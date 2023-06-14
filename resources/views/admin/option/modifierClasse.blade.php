@@ -21,3 +21,7 @@
 
 @include('option')
 @endsection
+@section('html')
+<script src="../../../js/modifierClasse.js"></script>    
+@endsection
+</html>

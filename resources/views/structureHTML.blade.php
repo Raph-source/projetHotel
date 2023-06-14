@@ -9,4 +9,5 @@
 <body>
     @yield('body')
 </body>
+@yield('html')
 </html>
