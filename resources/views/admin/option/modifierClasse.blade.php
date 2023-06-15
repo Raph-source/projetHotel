@@ -1,10 +1,12 @@
 @extends('structureHTML')
 @section('title', 'Home')
 @section('body')
+
+<button id="descBouton"> modifier la description</button> <button id="prixBouton">modifier le prix</button><br>
 <?php if(isset($_SESSION['notifModifClasse'])) echo $_SESSION['notifModifClasse'];?>
 
-<form action="formulaire-modification-classe" method="post">
-    @csrf
+<form action="formulaire-modification-classe" method="post" id="formulaire">
+    @csrf <br>
     <label for="classeChambre">Choisir la classe à modifier: </label>
     <select name="classeChambre" id="">
         <option value=""></option>
@@ -12,16 +14,13 @@
             <option value="{{$classe['nom']}}">{{$classe['nom']}}</option>
         @endforeach
     </select><br>
-    <label for="nouvelleDesc">Inserer la nouvelle description: </label><br>
-    <textarea name="nouvDesc" id="" cols="30" rows="10">ici...</textarea><br>
-    <label for="prix">Inserer le nouveau de prix: </label>
-    <input type="text" name="nouvPrix" value="ici..."><br>
+    <div id="descDiv"></div>
+    <div id="prixDiv"></div>
     <input type="submit">
 </form>
-
 @include('option')
 @endsection
 @section('html')
-<script src="../../../js/modifierClasse.js"></script>    
+@vite(['resources/js/admin/modifierClasse.js'])
 @endsection
 </html>

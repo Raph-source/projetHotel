@@ -245,6 +245,7 @@ class AdminControleur extends Controller
     //methode de la modification d'une classe
     public function modifierClasse(Request $request){
         //verification des champs du formulaire
+        dd($request->all());
         $validator = Validator::make($request->all(), [
             'classeChambre' => 'required',
             'nouvDesc' => 'required',
