@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('chambres', function (Blueprint $table) {
             $table->id();
             $table->integer('idClasseChambre')->foreignIdFor(ClasseChambre::class)->constrained()->cascadeOnDelete();
-            $table->string('numPorte')->unique();
+            $table->string('numPorte')->unique()->nullable(false);
             $table->timestamps();
         });
     }

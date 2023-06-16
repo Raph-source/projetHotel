@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('photos', function (Blueprint $table) {
             $table->id();
             $table->integer('idClasseChambre')->foreignIdFor(ClasseChambre::class)->constrained()->cascadeOnDelete();
-            $table->string('chemin')->unique();
+            $table->string('chemin')->unique()->nullable(false);
             $table->timestamps();
         });
     }

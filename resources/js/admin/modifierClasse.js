@@ -3,6 +3,7 @@ let descBouton = document.getElementById('descBouton');
 let prixBouton = document.getElementById('prixBouton');
 let descDiv = document.getElementById('descDiv');
 let prixDiv = document.getElementById('prixDiv');
+let confirmer = document.getElementById('confirmer');
 
 //ajout du champ de la nouvelle description
 descBouton.addEventListener('click', function(){
@@ -28,4 +29,10 @@ prixBouton.addEventListener('click', function(){
 
     //desactivation du button de la modification d'une classe des chambre
     prixBouton.disabled = true;
+});
+
+//confirmation de la modification
+confirmer.addEventListener('click', function(){
+    if(confirm('voulez-vous modifier cette classe de chambre'))
+        document.getElementById('formulaire').submit();
 });

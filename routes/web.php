@@ -25,7 +25,7 @@ Route::controller(AdminControleur::class)->group(function(){
     Route::get('je suis l\'admin de cette hotel', 'welcome');
     Route::get('mot-de-passe-oublié', function(){return view('admin.motDePasseOublie');});
     Route::get('ajouter-classe-chambre', function(){return view('admin.option.ajouterClasse');});
-    Route::get('ajouter-chambre', 'getFormulaireAjouterClasseChambre');
+    Route::get('ajouter-chambre', 'getFormulaireAjouterChambre');
     Route::get('modifier-Classe', 'getFormulaireModifierClasse');    
 
     Route::post('formulaire-inscription', 'inscription');

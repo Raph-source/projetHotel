@@ -16,7 +16,7 @@
     </select><br>
     <div id="descDiv"></div>
     <div id="prixDiv"></div>
-    <input type="submit">
+    <input type="button" id="confirmer" value="confirmer">
 </form>
 @include('option')
 @endsection

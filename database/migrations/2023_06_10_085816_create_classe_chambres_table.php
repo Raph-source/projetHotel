@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('classe_chambres', function (Blueprint $table) {
             $table->id();
-            $table->string('nom')->unique();
-            $table->string('description')->unique();
-            $table->float('prix')->unique();
+            $table->string('nom')->unique()->nullable(false);
+            $table->string('description')->unique()->nullable(false);
+            $table->float('prix')->unique()->nullable(false);
             $table->timestamps();
         });
     }
