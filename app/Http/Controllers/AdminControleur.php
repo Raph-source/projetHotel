@@ -6,10 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
-
+use Illuminate\Support\Facades\Storage;
 use App\Models\Admin;
 use App\Models\ClasseChambre;
 use App\Models\Chambre;
+use App\Models\Photo;
 
 //importation de phpmailer
 use PHPMailer\PHPMailer\PHPMailer;
@@ -168,8 +169,7 @@ class AdminControleur extends Controller
         }
 
         //récuperation de l'id de la classe de chambre
-        $trouver = ClasseChambre::where('nom', '=', $classeChambre)->get('id');
-        $idClasseChambre = $trouver[0]->id;
+        $idClasseChambre = getIdClasseChambre($classeChambre);
 
         //enregistrement de la chambre dans la bdd
         try{
@@ -220,11 +220,46 @@ class AdminControleur extends Controller
         return view('admin.option.ajouterClasse');
       } 
     }
-
+    //méthode qui retourne le formulaire d'ajout d'une photo
+    public function getFormulaireAjouterPhoto(ClasseChambre $classeChambre){
+        return view('admin.option.ajouterPhoto', ['classeChambre' => $classeChambre->all()]);
+    }
     //methode d'ajouter d'une photo
     public function ajouterPhoto(Request $request){
-        //à faire par...
+        //verifier les champs du formulaire
+        $validator = Validator::make($request->all(), [
+            'classeChambre' => 'required',
+            'photo' => 'image|required'
+        ]);
+        if($validator->fails()){
+            $_SESSION['notifImage'] = "n'inserer pas autre chose qu'une image et remplissez tout les champs";
+            return view('admin.option.ajouterPhoto', ['classeChambre' => $classeChambre->all()]);    
+        }
+        //verification que l'image ne contiennent pas d'erreur
+        if($request->file('photo')->getError()){
+            $_SESSION['notifImage'] = "votre image contient des erreurs";
+            return view('admin.option.ajouterPhoto', ['classeChambre' => $classeChambre->all()]);
+        }
+
+        //sauvegarde de la photo et récuperation du chemin
+        $chemin = $request->file('photo')->store('imagesClasseChambre', 'public');
+
+        //recuperation de l'id de la classe de chambre
+        $classeChambre = $request->input('classeChambre');
+        $idClasseChambre = AdminControleur::getIdClasseChambre($classeChambre);
+
+        $photo = new Photo;
+        $photo->chemin = $chemin;
+        $photo->idClasseChambre = $idClasseChambre;
+        $photo->save();
+
+        //teste pour voir si l'image est bien sauvergadée
+        $trouver = $photo->where('idClasseChambre', '=', $idClasseChambre)->get('chemin');
+        $url = Storage::disk('public')->url($trouver[15]->chemin);
+        echo '<img src="'.$url.'" width="250" heigth="250" >';
+        dd($url);
     }
+
 
     //methode d'ajouter d'une video
     public function ajouterVideo(Request $request){
@@ -264,13 +299,12 @@ class AdminControleur extends Controller
         }
 
         //récuperation de l'id de classe
-        $trouver = ClasseChambre::where('nom', '=', $classeChambre)->get('id');
-        $trouver = $trouver[0]->id;
-        
+        $idClasseChambre = getIdClasseChambre($classeChambre);
+    
         //modification dans la bdd
         if($request->has('nouvDesc'))
             try{
-                ClasseChambre::where('id', '=', $trouver)->update([
+                ClasseChambre::where('id', '=', $idClasseChambre)->update([
                     'description' => $nouvDesc,
                 ]);
             }catch(QueryException $e){
@@ -280,7 +314,7 @@ class AdminControleur extends Controller
            
         if($request->has('nouvPrix'))
             try{
-                ClasseChambre::where('id', '=', $trouver)->update([
+                ClasseChambre::where('id', '=', $idClasseChambre)->update([
                     'prix' => $nouvPrix,
                 ]);
             }catch(QueryException $e){
@@ -338,8 +372,8 @@ class AdminControleur extends Controller
        
         return $trouver[0]->mdp;
     }
+    //la méthode permettant d'envoyer un mail
     private function envoyerEmail($email, $sujet, $message){
-        //Create an instance; passing `true` enables exceptions
         $mail = new PHPMailer(true);
 
         try {
@@ -375,4 +409,12 @@ class AdminControleur extends Controller
             $_SESSION['notifEmail'] = 'Nous n\'avons pas effectuer l\'envoi du mail';
         }
     }
+
+    //méthode qui retourne l'id d'une classe de chambre
+    private function getIdClasseChambre($classeChambre): int{
+        //récuperation de l'id de la classe de chambre
+        $trouver = ClasseChambre::where('nom', '=', $classeChambre)->get('id');
+        return $trouver[0]->id;
+    }
+    
 }

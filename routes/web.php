@@ -26,7 +26,8 @@ Route::controller(AdminControleur::class)->group(function(){
     Route::get('mot-de-passe-oublié', function(){return view('admin.motDePasseOublie');});
     Route::get('ajouter-classe-chambre', function(){return view('admin.option.ajouterClasse');});
     Route::get('ajouter-chambre', 'getFormulaireAjouterChambre');
-    Route::get('modifier-Classe', 'getFormulaireModifierClasse');    
+    Route::get('modifier-Classe', 'getFormulaireModifierClasse');   
+    Route::get('ajouter-photo', 'getFormulaireAjouterPhoto'); 
 
     Route::post('formulaire-inscription', 'inscription');
     Route::post('formulaire-authentification', 'authentification');
@@ -34,4 +35,5 @@ Route::controller(AdminControleur::class)->group(function(){
     Route::post('formulaire-ajout-classe-chambre', 'ajouterClasse');
     Route::post('formulaire-ajouter-chambre', 'ajouterChambre');
     Route::post('formulaire-modification-classe', 'modifierClasse');
+    Route::post('formulaire-ajout-photo', 'ajouterPhoto');
 });
