@@ -6,6 +6,7 @@
     <a href="supprimerChambre">Supprimer une chambre</a><br>
     <a href="ajouter-photo">Ajouter une photo</a><br>
     <a href="ajouterVideo">Ajouter une video</a><br>
+    <a href="supprimer-fichier">Supprimer photos/videos</a>
     <a href="changerEtat">Changer l'etat d'une chambre</a><br>
     <a href="changerMdp">Changer le mot de passe</a><br>
     <a href="deconnexion">Deconnexion</a><br>

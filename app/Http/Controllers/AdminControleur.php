@@ -78,11 +78,11 @@ class AdminControleur extends Controller
         }
         else{
              //verifAuth des champs du formulaire
-            $vaidator = Validator::make($request->all(), [
+            $validator = Validator::make($request->all(), [
                 'pseudo' => 'required',
                 'mdp' => 'required'
             ]);
-            if($vaidator->fails()){
+            if($validator->fails()){
                 $_SESSION['notifAuth'] = 'Erreur des champs';
                 return view('admin.authAdmin');
             }
@@ -109,10 +109,10 @@ class AdminControleur extends Controller
     //la permet à l'admin de récuperer son mot de passe en cas d'oubli
     public function recupererMdp(Request $request): View{
         //verification des champs du formulaire
-        $vaidator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email'
         ]);
-        if($vaidator->fails()){
+        if($validator->fails()){
             $_SESSION['notifEmail'] = 'Remplissez tout les champs';
             return view('admin.motDePasseOublie');
         }
@@ -135,7 +135,7 @@ class AdminControleur extends Controller
     }
 
     //méthode permettant de chamger le mot de passe
-    public function changerMdp(Request $requset){
+    public function changerMdp(Request $request){
         //à faire par GLORIA, bonne chance...
     }
 
@@ -224,7 +224,7 @@ class AdminControleur extends Controller
     public function getFormulaireAjouterPhoto(ClasseChambre $classeChambre){
         return view('admin.option.ajouterPhoto', ['classeChambre' => $classeChambre->all()]);
     }
-    //methode d'ajouter d'une photo
+    //methode d'ajout d'une photo
     public function ajouterPhoto(Request $request){
         //verifier les champs du formulaire
         $validator = Validator::make($request->all(), [
@@ -261,11 +261,40 @@ class AdminControleur extends Controller
     }
 
 
-    //methode d'ajouter d'une video
+    //methode d'ajoute d'une video
     public function ajouterVideo(Request $request){
         //à faire par...
     }
 
+    //cette méthode renvoi le formulaire du choix des fichier à supprimer (photo ou video)
+    public function getFormulaireChoix(){
+        return view('admin.option.choixFichier', ['classeChambre' => ClasseChambre::all()]);
+
+    }
+
+    //la méthode renvoi le formulaire de suppression des fichier
+    public function getFormulaireSupprimerFichier(Request $request){
+        //verification des champs du formulaire
+        $validator = Validator::make($request->all(), [
+            'classeChambre' => 'required'
+        ]);
+        if($validator->fails()){
+            $_SESSION['notifChoixFichier'] = "Erreur des champs";
+            return view('admin.option.choixFichier', ['classeChambre' => ClasseChambre::all()]);
+        }
+
+        if($request->has('photo')){
+            //A FAIRE
+        }
+        else{
+            //A FAIRE
+        }
+
+    }
+    //méthode qui permet de supprimer des photos
+    public function supprimerFichier(Resquest $request){
+        //à faire par RAPH
+    }
     //methode du changement d'etat d'une chambre
     public function changerEtat(Request $request){
         //à faire par...

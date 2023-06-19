@@ -28,12 +28,14 @@ Route::controller(AdminControleur::class)->group(function(){
     Route::get('ajouter-chambre', 'getFormulaireAjouterChambre');
     Route::get('modifier-Classe', 'getFormulaireModifierClasse');   
     Route::get('ajouter-photo', 'getFormulaireAjouterPhoto'); 
+    Route::get('supprimer-fichier', 'getFormulaireChoix');
 
     Route::post('formulaire-inscription', 'inscription');
     Route::post('formulaire-authentification', 'authentification');
     Route::post('formulaire-de-passe-oublié', 'recupererMdp');
     Route::post('formulaire-ajout-classe-chambre', 'ajouterClasse');
-    Route::post('formulaire-ajouter-chambre', 'ajouterChambre');
+    Route::post('formulaire-ajout-chambre', 'ajouterChambre');
     Route::post('formulaire-modification-classe', 'modifierClasse');
     Route::post('formulaire-ajout-photo', 'ajouterPhoto');
+    Route::post('formulaire-choix-fichier', 'getFormulaireSupprimerFichier');
 });
