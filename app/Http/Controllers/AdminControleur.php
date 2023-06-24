@@ -7,10 +7,14 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+
+//inportation des models
 use App\Models\Admin;
 use App\Models\ClasseChambre;
 use App\Models\Chambre;
 use App\Models\Photo;
+use App\Models\Video;
 
 //importation de phpmailer
 use PHPMailer\PHPMailer\PHPMailer;
@@ -145,7 +149,7 @@ class AdminControleur extends Controller
     }
 
     //méthode d'ajout d'une chambre
-    public function ajouterChambre(Request $request){
+    public function ajouterChambre(Request $request): View{
         //verification des champs du formulaire
         $validator = Validator::make($request->all(), [
             'numPorte' => 'required',
@@ -221,7 +225,7 @@ class AdminControleur extends Controller
       } 
     }
     //méthode qui retourne le formulaire d'ajout d'une photo
-    public function getFormulaireAjouterPhoto(ClasseChambre $classeChambre){
+    public function getFormulaireAjouterPhoto(ClasseChambre $classeChambre): View{
         return view('admin.option.ajouterPhoto', ['classeChambre' => $classeChambre->all()]);
     }
     //methode d'ajout d'une photo
@@ -253,11 +257,8 @@ class AdminControleur extends Controller
         $photo->idClasseChambre = $idClasseChambre;
         $photo->save();
 
-        //teste pour voir si l'image est bien sauvergadée
-        $trouver = $photo->where('idClasseChambre', '=', $idClasseChambre)->get('chemin');
-        $url = Storage::disk('public')->url($trouver[15]->chemin);
-        echo '<img src="'.$url.'" width="250" heigth="250" >';
-        dd($url);
+        $_SESSION['notifHome'] = "l'image ajouter avec succès";
+        return view('admin.option.home');
     }
 
 
@@ -267,13 +268,13 @@ class AdminControleur extends Controller
     }
 
     //cette méthode renvoi le formulaire du choix des fichier à supprimer (photo ou video)
-    public function getFormulaireChoix(){
+    public function getFormulaireChoix(): View{
         return view('admin.option.choixFichier', ['classeChambre' => ClasseChambre::all()]);
 
     }
-
+    
     //la méthode renvoi le formulaire de suppression des fichier
-    public function getFormulaireSupprimerFichier(Request $request){
+    public function getFormulaireSupprimerFichier(Request $request): View{
         //verification des champs du formulaire
         $validator = Validator::make($request->all(), [
             'classeChambre' => 'required'
@@ -284,16 +285,44 @@ class AdminControleur extends Controller
         }
 
         if($request->has('photo')){
-            //A FAIRE
+            $trouver = Photo::paginate(3, ['chemin']);
+            return view('admin.option.supprimerFichier', ['cheminPhoto' => $trouver]);
+        }else if($request->has('video')){
+            $trouver = Video::paginate(2, ['chemin']);
+            return view('admin.option.supprimerFichier', ['cheminVideo' => $trouver]);        
         }
         else{
-            //A FAIRE
+        $_SESSION['notifChoixFichier'] = "Erreur des champs";
+        return view('admin.option.choixFichier', ['classeChambre' => ClasseChambre::all()]);
         }
-
     }
     //méthode qui permet de supprimer des photos
-    public function supprimerFichier(Resquest $request){
-        //à faire par RAPH
+    public function supprimerFichier(Request $request): View{
+        
+        if($request->has('photo')){//si il s'agit des photos
+            //suppression des photos dans la bdd
+            DB::table('photos')->whereIn('chemin', $request->input('photo'))->delete();
+            //suppression des photos dans le dossier
+            foreach($request->input('photo') as $chemin)
+                Storage::disk('public')->delete($chemin);
+
+            $_SESSION['notifHome'] = "Photo(s) supprimer avec succès";
+            return view('admin.option.home');
+        }
+        else if($request->has('video')){//si il s'agit des videos
+            //suppresion des videos dans la bdd
+            DB::table('videos')->whereIn('chemin', $request->input('video'))->delete();
+            //suppression des photos dans le dossier
+            foreach($request->input('video') as $chemin)
+                Storage::disk('public')->delete($chemin);
+
+            $_SESSION['notifHome'] = "Video(s) supprimer avec succès";
+            return view('admin.option.home');
+        }
+        else{
+            $_SESSION['notifSupprimerFichier'] = "vous n'avez rien selectionné";
+            return view('admin.option.supprimerFichier');
+        }
     }
     //methode du changement d'etat d'une chambre
     public function changerEtat(Request $request){
@@ -444,6 +473,11 @@ class AdminControleur extends Controller
         //récuperation de l'id de la classe de chambre
         $trouver = ClasseChambre::where('nom', '=', $classeChambre)->get('id');
         return $trouver[0]->id;
+    }
+
+    //cette méthode permet de supprimer des fichiers dans la bdd
+    private function supprimerFichierBdd($tableau): void{
+        Photo::whereln('chemin', $tableau)->delete();
     }
     
 }

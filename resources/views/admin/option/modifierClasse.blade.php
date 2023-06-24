@@ -20,7 +20,7 @@
 </form>
 @include('option')
 @endsection
-@section('html')
+@section('script')
 @vite(['resources/js/admin/modifierClasse.js'])
 @endsection
 </html>

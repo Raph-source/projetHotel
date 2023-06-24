@@ -38,4 +38,5 @@ Route::controller(AdminControleur::class)->group(function(){
     Route::post('formulaire-modification-classe', 'modifierClasse');
     Route::post('formulaire-ajout-photo', 'ajouterPhoto');
     Route::post('formulaire-choix-fichier', 'getFormulaireSupprimerFichier');
+    Route::post('formulaire-suppimer-fichier', 'supprimerFichier');
 });

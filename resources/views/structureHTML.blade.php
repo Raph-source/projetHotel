@@ -9,5 +9,5 @@
 <body>
     @yield('body')
 </body>
-@yield('html')
+@yield('script')
 </html>
