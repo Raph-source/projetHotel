@@ -11,14 +11,12 @@
             <input type="checkbox" name="photo[]" id="" value="{{$path['chemin']}}"><br>
         @endforeach
         <button id="confirmer">Supprimer</button><br>
-        {{$cheminPhoto->links()}}
     @elseif(isset($cheminVideo))
         @foreach ($cheminVideo as $path)
-            <img src="{{Storage::disk('public')->url($path['chemin'])}}" alt=""> 
+            <video src="{{Storage::disk('public')->url($path['chemin'])}}" controls="controls" width="300" height="100"></video>
             <input type="checkbox" name="video[]" id="" value="{{$path['chemin']}}"><br>
         @endforeach
         <button id="confirmer">Supprimer</button><br>
-        {{$cheminVideo->links()}}
     @else
         <p>il n'y à aucun fichier</p>
     @endif

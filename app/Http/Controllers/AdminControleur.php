@@ -245,7 +245,7 @@ class AdminControleur extends Controller
             return view('admin.option.ajouterPhoto', ['classeChambre' => $classeChambre->all()]);
         }
 
-        //sauvegarde de la photo et récuperation du chemin
+        //sauvegarde de la video et récuperation du chemin
         $chemin = $request->file('photo')->store('imagesClasseChambre', 'public');
 
         //recuperation de l'id de la classe de chambre
@@ -261,10 +261,41 @@ class AdminControleur extends Controller
         return view('admin.option.home');
     }
 
-
+    //méthode qui retourne le formulaire d'ajout d'une video
+    public function getFormulaireAjouterVideo(ClasseChambre $classeChambre): View{
+        return view('admin.option.ajouterVideo', ['classeChambre' => $classeChambre->all()]);
+    }
     //methode d'ajoute d'une video
     public function ajouterVideo(Request $request){
-        //à faire par...
+        //verifier les champs du formulaire
+        $validator = Validator::make($request->all(), [
+            'classeChambre' => 'required',
+            'video' => 'mimetypes:video/mp4,video/avi,video/mpeg|required'
+        ]);
+        if($validator->fails()){
+            $_SESSION['notifVideo'] = "n'inserer pas autre chose qu'une video et remplissez tout les champs";
+            return view('admin.option.ajouterVideo', ['classeChambre' => $classeChambre->all()]);    
+        }
+        //verification que la video ne contiennent pas d'erreur
+        if($request->file('video')->getError()){
+            $_SESSION['notifVideo'] = "votre video contient des erreurs";
+            return view('admin.option.ajouterVideo', ['classeChambre' => $classeChambre->all()]);
+        }
+
+        //sauvegarde de la video et récuperation du chemin
+        $chemin = $request->file('video')->store('videosClasseChambre', 'public');
+
+        //recuperation de l'id de la classe de chambre
+        $classeChambre = $request->input('classeChambre');
+        $idClasseChambre = AdminControleur::getIdClasseChambre($classeChambre);
+
+        $video = new Video;
+        $video->chemin = $chemin;
+        $video->idClasseChambre = $idClasseChambre;
+        $video->save();
+
+        $_SESSION['notifHome'] = "la video ajouter avec succès";
+        return view('admin.option.home');
     }
 
     //cette méthode renvoi le formulaire du choix des fichier à supprimer (photo ou video)
@@ -285,10 +316,10 @@ class AdminControleur extends Controller
         }
 
         if($request->has('photo')){
-            $trouver = Photo::paginate(3, ['chemin']);
+            $trouver = Photo::get('chemin');
             return view('admin.option.supprimerFichier', ['cheminPhoto' => $trouver]);
         }else if($request->has('video')){
-            $trouver = Video::paginate(2, ['chemin']);
+            $trouver = Video::get('chemin');
             return view('admin.option.supprimerFichier', ['cheminVideo' => $trouver]);        
         }
         else{

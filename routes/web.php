@@ -27,7 +27,8 @@ Route::controller(AdminControleur::class)->group(function(){
     Route::get('ajouter-classe-chambre', function(){return view('admin.option.ajouterClasse');});
     Route::get('ajouter-chambre', 'getFormulaireAjouterChambre');
     Route::get('modifier-Classe', 'getFormulaireModifierClasse');   
-    Route::get('ajouter-photo', 'getFormulaireAjouterPhoto'); 
+    Route::get('ajouter-photo', 'getFormulaireAjouterPhoto');
+    Route::get('ajouter-video', 'getFormulaireAjouterVideo');
     Route::get('supprimer-fichier', 'getFormulaireChoix');
 
     Route::post('formulaire-inscription', 'inscription');
@@ -37,6 +38,7 @@ Route::controller(AdminControleur::class)->group(function(){
     Route::post('formulaire-ajout-chambre', 'ajouterChambre');
     Route::post('formulaire-modification-classe', 'modifierClasse');
     Route::post('formulaire-ajout-photo', 'ajouterPhoto');
+    Route::post('formulaire-ajout-video', 'ajouterVideo');    
     Route::post('formulaire-choix-fichier', 'getFormulaireSupprimerFichier');
     Route::post('formulaire-suppimer-fichier', 'supprimerFichier');
 });
