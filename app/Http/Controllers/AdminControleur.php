@@ -6,14 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
 //inportation des models
 use App\Models\Admin;
-use App\Models\ClasseChambre;
-use App\Models\Chambre;
-use App\Models\Photo;
 use App\Models\Video;
 
 //importation de phpmailer
@@ -143,124 +139,6 @@ class AdminControleur extends Controller
         //à faire par GLORIA, bonne chance...
     }
 
-    //méthode qui retourne le fomulaire d'ajout de chambre
-    public function getFormulaireAjouterChambre(): View{
-        return view('admin.option.ajouterChambre', ['classeChambre' => ClasseChambre::all()]);
-    }
-
-    //méthode d'ajout d'une chambre
-    public function ajouterChambre(Request $request): View{
-        //verification des champs du formulaire
-        $validator = Validator::make($request->all(), [
-            'numPorte' => 'required',
-            'classeChambre' => 'required'
-        ]);
-
-        if($validator->fails()){
-            $_SESSION['notifAjoutChambre'] = "Erreur des champs";
-            return view('admin.option.ajouterChambre', ['classeChambre' => ClasseChambre::all()]);
-        }
-
-        //bloquer les injections
-        $numPorte = htmlspecialchars($request->input('numPorte'));
-        $classeChambre = strtoupper(htmlspecialchars($request->input('classeChambre')));
-
-        //verification que la la classe de chambre existe
-        $trouver = ClasseChambre::where('nom', '=', $classeChambre)->get();
-        if(count($trouver) == 0){
-            $_SESSION['notifAjoutChambre'] = "cette classe chambre n'existe pas";
-            return view('admin.option.ajouterChambre', ['classeChambre' => ClasseChambre::all()]);
-        }
-
-        //récuperation de l'id de la classe de chambre
-        $idClasseChambre = getIdClasseChambre($classeChambre);
-
-        //enregistrement de la chambre dans la bdd
-        try{
-            $chambre = new Chambre;
-            $chambre->numPorte = $numPorte;
-            $chambre->idClasseChambre = $idClasseChambre;
-            $chambre->save();
-    
-            $_SESSION['notifHome'] = "la chambre à été ajouter";
-            return view('admin.option.home');
-        }catch(QueryException $e){
-            $_SESSION['notifAjoutChambre'] = "cette chambre existe déjà";
-            return view('admin.option.ajouterChambre', ['classeChambre' => ClasseChambre::all()]);
-        }
-
-    }
-
-    //méthode d'ajout d'une classe de chambre
-    public function ajouterClasse(Request $request): View{
-        //verification des champs du formulaire
-        $validator = Validator::make($request->all(), [
-            'nom' => 'required',
-            'description' => 'required',
-            'prix' => 'required|numeric'
-        ]);
-        if($validator->fails()){
-            $_SESSION['notifAjoutClasse'] = "Erreur des champs";
-            return view('admin.option.ajouterClasse');
-        }
-        
-        //bloquer les injections
-        $nom = strtoupper(htmlspecialchars($request->input('nom')));
-        $description = strtolower(htmlspecialchars($request->input('description')));
-        $prix = htmlspecialchars($request->input('prix'));
-
-        //inserion de la classe dans la bdd
-      try{
-        $classeChambre = new ClasseChambre;
-        $classeChambre->nom = $nom;
-        $classeChambre->description = $description;
-        $classeChambre->prix = $prix;
-        $classeChambre->save();
-        $_SESSION['notifHome'] = 'la classe à été ajoutée';
-        return view('admin.option.home');
-
-      }catch(QueryException $e){
-        $_SESSION['notifAjoutClasse'] = "Ne mettez les informations existant dans une autre classe de chambre";
-        return view('admin.option.ajouterClasse');
-      } 
-    }
-    //méthode qui retourne le formulaire d'ajout d'une photo
-    public function getFormulaireAjouterPhoto(ClasseChambre $classeChambre): View{
-        return view('admin.option.ajouterPhoto', ['classeChambre' => $classeChambre->all()]);
-    }
-    //methode d'ajout d'une photo
-    public function ajouterPhoto(Request $request){
-        //verifier les champs du formulaire
-        $validator = Validator::make($request->all(), [
-            'classeChambre' => 'required',
-            'photo' => 'image|required'
-        ]);
-        if($validator->fails()){
-            $_SESSION['notifImage'] = "n'inserer pas autre chose qu'une image et remplissez tout les champs";
-            return view('admin.option.ajouterPhoto', ['classeChambre' => $classeChambre->all()]);    
-        }
-        //verification que l'image ne contiennent pas d'erreur
-        if($request->file('photo')->getError()){
-            $_SESSION['notifImage'] = "votre image contient des erreurs";
-            return view('admin.option.ajouterPhoto', ['classeChambre' => $classeChambre->all()]);
-        }
-
-        //sauvegarde de la video et récuperation du chemin
-        $chemin = $request->file('photo')->store('imagesClasseChambre', 'public');
-
-        //recuperation de l'id de la classe de chambre
-        $classeChambre = $request->input('classeChambre');
-        $idClasseChambre = AdminControleur::getIdClasseChambre($classeChambre);
-
-        $photo = new Photo;
-        $photo->chemin = $chemin;
-        $photo->idClasseChambre = $idClasseChambre;
-        $photo->save();
-
-        $_SESSION['notifHome'] = "l'image ajouter avec succès";
-        return view('admin.option.home');
-    }
-
     //méthode qui retourne le formulaire d'ajout d'une video
     public function getFormulaireAjouterVideo(ClasseChambre $classeChambre): View{
         return view('admin.option.ajouterVideo', ['classeChambre' => $classeChambre->all()]);
@@ -298,63 +176,7 @@ class AdminControleur extends Controller
         return view('admin.option.home');
     }
 
-    //cette méthode renvoi le formulaire du choix des fichier à supprimer (photo ou video)
-    public function getFormulaireChoix(): View{
-        return view('admin.option.choixFichier', ['classeChambre' => ClasseChambre::all()]);
-
-    }
     
-    //la méthode renvoi le formulaire de suppression des fichier
-    public function getFormulaireSupprimerFichier(Request $request): View{
-        //verification des champs du formulaire
-        $validator = Validator::make($request->all(), [
-            'classeChambre' => 'required'
-        ]);
-        if($validator->fails()){
-            $_SESSION['notifChoixFichier'] = "Erreur des champs";
-            return view('admin.option.choixFichier', ['classeChambre' => ClasseChambre::all()]);
-        }
-
-        if($request->has('photo')){
-            $trouver = Photo::get('chemin');
-            return view('admin.option.supprimerFichier', ['cheminPhoto' => $trouver]);
-        }else if($request->has('video')){
-            $trouver = Video::get('chemin');
-            return view('admin.option.supprimerFichier', ['cheminVideo' => $trouver]);        
-        }
-        else{
-        $_SESSION['notifChoixFichier'] = "Erreur des champs";
-        return view('admin.option.choixFichier', ['classeChambre' => ClasseChambre::all()]);
-        }
-    }
-    //méthode qui permet de supprimer des photos
-    public function supprimerFichier(Request $request): View{
-        
-        if($request->has('photo')){//si il s'agit des photos
-            //suppression des photos dans la bdd
-            DB::table('photos')->whereIn('chemin', $request->input('photo'))->delete();
-            //suppression des photos dans le dossier
-            foreach($request->input('photo') as $chemin)
-                Storage::disk('public')->delete($chemin);
-
-            $_SESSION['notifHome'] = "Photo(s) supprimer avec succès";
-            return view('admin.option.home');
-        }
-        else if($request->has('video')){//si il s'agit des videos
-            //suppresion des videos dans la bdd
-            DB::table('videos')->whereIn('chemin', $request->input('video'))->delete();
-            //suppression des photos dans le dossier
-            foreach($request->input('video') as $chemin)
-                Storage::disk('public')->delete($chemin);
-
-            $_SESSION['notifHome'] = "Video(s) supprimer avec succès";
-            return view('admin.option.home');
-        }
-        else{
-            $_SESSION['notifSupprimerFichier'] = "vous n'avez rien selectionné";
-            return view('admin.option.supprimerFichier');
-        }
-    }
     //methode du changement d'etat d'une chambre
     public function changerEtat(Request $request){
         //à faire par...
@@ -499,12 +321,6 @@ class AdminControleur extends Controller
         }
     }
 
-    //méthode qui retourne l'id d'une classe de chambre
-    private function getIdClasseChambre($classeChambre): int{
-        //récuperation de l'id de la classe de chambre
-        $trouver = ClasseChambre::where('nom', '=', $classeChambre)->get('id');
-        return $trouver[0]->id;
-    }
 
     //cette méthode permet de supprimer des fichiers dans la bdd
     private function supprimerFichierBdd($tableau): void{
