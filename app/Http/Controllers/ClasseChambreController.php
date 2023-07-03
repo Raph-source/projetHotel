@@ -15,8 +15,10 @@ class ClasseChambreController extends Controller
     private $description;
     private $prix;
 
-    public function setNom($nom){
+    public function setAttribut($nom = null, $description = null, $prix = null){
         $this->nom = $nom;
+        $this->description = $description;
+        $this->prix = $prix;
     }
 
     public function getnom(){
@@ -41,9 +43,11 @@ class ClasseChambreController extends Controller
         }
         
         //bloquer les injections
-        $this->nom = strtoupper(htmlspecialchars($request->input('nom')));
-        $this->description = strtolower(htmlspecialchars($request->input('description')));
-        $this->prix = htmlspecialchars($request->input('prix'));
+        $nom = strtoupper(htmlspecialchars($request->input('nom')));
+        $description = strtolower(htmlspecialchars($request->input('description')));
+        $prix = htmlspecialchars($request->input('prix'));
+
+        ClasseChambreController::setAttribut($nom, $description, $prix);
 
         //inserion de la classe dans la bdd
       try{
@@ -59,6 +63,71 @@ class ClasseChambreController extends Controller
         $_SESSION['notifAjoutClasse'] = "Ne mettez les informations existant dans une autre classe de chambre";
         return view('admin.option.ajouterClasse');
       } 
+    }
+
+    //méthode retourne le formulaire de modification d'une chambre
+    public function getFormulaireModifierClasse(): View{
+        return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambreController::getAllClasse()]);
+    }
+
+    //methode de la modification d'une classe
+    public function modifierClasse(Request $request){
+        //verification des champs du formulaire
+        $validator = Validator::make($request->all(), [
+            'classeChambre' => 'required',
+            'nouvPrix' => 'numeric'
+        ]);
+        if($validator->fails()){
+            $_SESSION['notifModifClasse'] = "Erreur des champs";
+            return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambreController::getAllClasse()]);
+        }
+        //bloquer les injections
+        $classeChambre = strtoupper(htmlspecialchars($request->input('classeChambre')));
+        $nouvDesc = strtolower(htmlspecialchars($request->input('nouvDesc')));
+        $nouvPrix = htmlspecialchars($request->input('nouvPrix'));
+        ClasseChambreController::setAttribut($classeChambre, $nouvDesc, $nouvPrix);
+
+        //verification de la validité de la classe
+        $trouver = ClasseChambre::where('nom', '=', $this->nom)->get();
+        if(count($trouver) == 0){
+            $_SESSION['notifModifClasse'] = "cette classe n'existe pas";
+            return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambreController::getAllClasse()]);            
+        }
+
+        //récuperation de l'id de classe
+        $idClasseChambre = ClasseChambreController::getId();
+    
+        //modification dans la bdd
+        if($request->has('nouvDesc'))
+            try{
+                ClasseChambre::where('id', '=', $idClasseChambre)->update([
+                    'description' => $nouvDesc,
+                ]);
+            }catch(QueryException $e){
+                $_SESSION['notifModifClasse'] = "N'inserer pas une description qui existe ou une description null";
+                return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambreController::getAllClasse()]);            
+            }
+           
+        if($request->has('nouvPrix'))
+            try{
+                ClasseChambre::where('id', '=', $idClasseChambre)->update([
+                    'prix' => $nouvPrix,
+                ]);
+            }catch(QueryException $e){
+                $_SESSION['notifModifClasse'] = "N'inserer pas un prix existe qui ou un prix null";
+                return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambreController::getAllClasse()]);            
+            }            
+            
+        
+        //si l'admin ne change ni le prix ni la description
+        if(!$request->has('nouvDesc') && !$request->has('nouvPrix')){
+            $_SESSION['notifModifClasse'] = "Veuillez choisir quoi modifier, soit la description, soit le prix ou encore le deux";
+            return view('admin.option.modifierClasse', ['classeChambre' => ClasClasseChambreControllerseChambre::getAllClasse()]);
+        
+        }
+        
+        $_SESSION['notifHome'] = "classe mofifiée avec succès";
+        return view('admin.option.home');
     }
 
     //méthode qui retourne l'id d'une classe de chambre

@@ -20,19 +20,19 @@ class PhotoController extends FichierController
             'photo' => 'image|required'
         ]);
         if($validator->fails()){
-            $_SESSION['notifImage'] = "n'inserer pas autre chose qu'une image et remplissez tout les champs";
+            $_SESSION['notifImage'] = "Erreur des champs";
             return view('admin.option.ajouterPhoto', ['classeChambre' => $this->classeChambre->getAllClasse()]);    
         }
-        //verification que l'image ne contiennent pas d'erreur
+        //verification que l'image ne contienne pas d'erreurs
         if($request->file('photo')->getError()){
             $_SESSION['notifImage'] = "votre image contient des erreurs";
             return view('admin.option.ajouterPhoto', ['classeChambre' => $this->classeChambre->getAllClasse()]);
         }
 
         //sauvegarde de la photo dans le dossier et la bdd
-        $this->chemin = $request->file('photo')->store('imagesClasseChambre', 'public');
+        PhotoController::setChemin($request->file('photo')->store('imagesClasseChambre', 'public'));
         $nom = htmlspecialchars($request->input('classeChambre'));
-        $this->classeChambre->setNom($nom);
+        $this->classeChambre->setAttribut($nom);
 
         $photo = new Photo;
         $photo->chemin = $this->chemin;
@@ -43,14 +43,36 @@ class PhotoController extends FichierController
         return view('admin.option.home');
     }
 
+    //la méthode renvoi le formulaire du choix d'une classe lors de la suppression d'un fichier
+    public function getFormChoseClasse(): View{
+        return view('admin.option.choixClasse' , [
+            'classeChambre' => $this->classeChambre->getAllClasse(),
+            'fichier' => 'photo'
+        ]);
+    }
+
     //méthode qui retourne le formulaire d'ajout d'une photo
     public function getFormAddFile(): View{
         return view('admin.option.ajouterPhoto' , ['classeChambre' => $this->classeChambre->getAllClasse()]);
     }
 
-    public function getFormDelFile(): View{
-        $trouver = Photo::get('chemin');
-        return view('admin.option.supprimerPhoto', ['chemin' => $trouver]);
+    public function getFormDelFile(Request $request): View{
+        //verifier les champs du formulaire
+        $validator = Validator::make($request->all(), [
+            'classeChambre' => 'required',
+        ]);
+        if($validator->fails()){
+            $_SESSION['notifChoixClasse'] = "Erreur des champs";
+            return view('admin.option.choixClasse', [
+                'classeChambre' => $this->classeChambre->getAllClasse(),
+                'fichier' => 'photo'
+            ]);    
+        }
+        //donner le à la classe de chambre
+        $this->classeChambre->setAttribut($request->input('classeChambre'));
+
+        $trouver = Photo::where(['idClasseChambre' =>$this->classeChambre->getId()])->get('chemin');
+        return view('admin.option.supprimerFichier', ['cheminPhoto' => $trouver]);
     }
 
     public function deleteFile(Request $request): View{
@@ -59,9 +81,9 @@ class PhotoController extends FichierController
             'photo' => 'required'
         ]);
         if($validator->fails()){
-            $_SESSION['notifSupprimerPhoto'] = "Erreur des champs";
+            $_SESSION['notifSupprimerFichier'] = "Erreur des champs";
             $trouver = Photo::get('chemin');
-            return view('admin.option.supprimerPhoto', ['chemin' => $trouver]);
+            return view('admin.option.supprimerFichier', ['cheminPhoto' => $trouver]);
         }
 
         //suppression des photos dans la bdd

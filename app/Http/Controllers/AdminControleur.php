@@ -6,11 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\DB;
 
 //inportation des models
 use App\Models\Admin;
-use App\Models\Video;
 
 //importation de phpmailer
 use PHPMailer\PHPMailer\PHPMailer;
@@ -106,6 +104,10 @@ class AdminControleur extends Controller
         }
        
     }
+
+    public function getFormulaireMdpOublie(): View{
+        return view('admin.motDePasseOublie');
+    }
     //la permet à l'admin de récuperer son mot de passe en cas d'oubli
     public function recupererMdp(Request $request): View{
         //verification des champs du formulaire
@@ -139,112 +141,11 @@ class AdminControleur extends Controller
         //à faire par GLORIA, bonne chance...
     }
 
-    //méthode qui retourne le formulaire d'ajout d'une video
-    public function getFormulaireAjouterVideo(ClasseChambre $classeChambre): View{
-        return view('admin.option.ajouterVideo', ['classeChambre' => $classeChambre->all()]);
-    }
-    //methode d'ajoute d'une video
-    public function ajouterVideo(Request $request){
-        //verifier les champs du formulaire
-        $validator = Validator::make($request->all(), [
-            'classeChambre' => 'required',
-            'video' => 'mimetypes:video/mp4,video/avi,video/mpeg|required'
-        ]);
-        if($validator->fails()){
-            $_SESSION['notifVideo'] = "n'inserer pas autre chose qu'une video et remplissez tout les champs";
-            return view('admin.option.ajouterVideo', ['classeChambre' => $classeChambre->all()]);    
-        }
-        //verification que la video ne contiennent pas d'erreur
-        if($request->file('video')->getError()){
-            $_SESSION['notifVideo'] = "votre video contient des erreurs";
-            return view('admin.option.ajouterVideo', ['classeChambre' => $classeChambre->all()]);
-        }
-
-        //sauvegarde de la video et récuperation du chemin
-        $chemin = $request->file('video')->store('videosClasseChambre', 'public');
-
-        //recuperation de l'id de la classe de chambre
-        $classeChambre = $request->input('classeChambre');
-        $idClasseChambre = AdminControleur::getIdClasseChambre($classeChambre);
-
-        $video = new Video;
-        $video->chemin = $chemin;
-        $video->idClasseChambre = $idClasseChambre;
-        $video->save();
-
-        $_SESSION['notifHome'] = "la video ajouter avec succès";
-        return view('admin.option.home');
-    }
-
-    
     //methode du changement d'etat d'une chambre
     public function changerEtat(Request $request){
         //à faire par...
     }
-    //méthode retourne le formulaire de modification d'une chambre
-    public function getFormulaireModifierClasse(): View{
-        return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambre::all()]);
-    }
-
-    //methode de la modification d'une classe
-    public function modifierClasse(Request $request){
-        //verification des champs du formulaire
-        $validator = Validator::make($request->all(), [
-            'classeChambre' => 'required',
-            'nouvPrix' => 'numeric'
-        ]);
-        if($validator->fails()){
-            $_SESSION['notifModifClasse'] = "Erreur des champs";
-            return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambre::all()]);
-        }
-        //bloquer les injections
-        $classeChambre = strtoupper(htmlspecialchars($request->input('classeChambre')));
-        $nouvDesc = strtolower(htmlspecialchars($request->input('nouvDesc')));
-        $nouvPrix = htmlspecialchars($request->input('nouvPrix'));
-
-        //verification de la validité de la classe
-        $trouver = ClasseChambre::where('nom', '=', $classeChambre)->get();
-        if(count($trouver) == 0){
-            $_SESSION['notifModifClasse'] = "cette classe n'existe pas";
-            return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambre::all()]);            
-        }
-
-        //récuperation de l'id de classe
-        $idClasseChambre = getIdClasseChambre($classeChambre);
     
-        //modification dans la bdd
-        if($request->has('nouvDesc'))
-            try{
-                ClasseChambre::where('id', '=', $idClasseChambre)->update([
-                    'description' => $nouvDesc,
-                ]);
-            }catch(QueryException $e){
-                $_SESSION['notifModifClasse'] = "N'inserer pas une description qui existe ou une description null";
-                return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambre::all()]);            
-            }
-           
-        if($request->has('nouvPrix'))
-            try{
-                ClasseChambre::where('id', '=', $idClasseChambre)->update([
-                    'prix' => $nouvPrix,
-                ]);
-            }catch(QueryException $e){
-                $_SESSION['notifModifClasse'] = "N'inserer pas un prix existe qui ou un prix null";
-                return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambre::all()]);            
-            }            
-            
-        
-        //si l'admin ne change ni le prix ni la description
-        if(!$request->has('nouvDesc') && !$request->has('nouvPrix')){
-            $_SESSION['notifModifClasse'] = "Veuillez choisir quoi modifier, soit la description, soit le prix ou encore le deux";
-            return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambre::all()]);
-        
-        }
-        
-        $_SESSION['notifHome'] = "classe mofifiée avec succès";
-        return view('admin.option.home');
-    }
-
     //methode de la modification d'une chambre
     public function modifierChambre(Request $request){
         //à faire par...
@@ -317,14 +218,8 @@ class AdminControleur extends Controller
             $mail->send();
             $_SESSION['notifAuth'] = 'Verifier votre boite mail';
         } catch (Exception $e) {
-            $_SESSION['notifEmail'] = 'Nous n\'avons pas effectuer l\'envoi du mail';
+            $_SESSION['notifAuth'] = 'Nous n\'avons pas effectuer l\'envoi du mail';
         }
-    }
-
-
-    //cette méthode permet de supprimer des fichiers dans la bdd
-    private function supprimerFichierBdd($tableau): void{
-        Photo::whereln('chemin', $tableau)->delete();
     }
     
 }

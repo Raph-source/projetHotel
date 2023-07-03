@@ -16,6 +16,9 @@ abstract class FichierController extends Controller
         $this->classeChambre = new ClasseChambreController();
     }
 
+    protected function setChemin($chemin){
+        $this->chemin = $chemin;
+    }
     //la méthode permet d'uploader et d'enregistrer un fichier(video ou image) dans la bdd
     abstract public function saveFile(Request $request): View;
 
@@ -23,5 +26,8 @@ abstract class FichierController extends Controller
     abstract public function deleteFile(Request $request): View;
     
     //la méthode renvoi le formulaire de suppression des fichier
-    abstract public function getFormDelFile(): View;
+    abstract public function getFormDelFile(Request $request): View;
+
+    //la méthode renvoi le formulaire du choix d'une classe lors de la suppression d'un fichier
+    abstract public function getFormChoseClasse(): View;
 }
