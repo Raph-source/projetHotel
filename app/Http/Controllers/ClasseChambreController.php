@@ -150,4 +150,13 @@ class ClasseChambreController extends Controller
     public function getAllClasse(){
         return ClasseChambre::all();
     }
+
+    //retourne le formualaire de suppression d'une classe de chambre
+    public function getFormDelClasse(): View{
+        return view('admin.option.formDelClasse', ['classe' => ClasseChambreController::getAllClasse()]);
+    }
+    //methode de la suppression d'une classe
+    public function supprimerClasse(Request $request){
+        //à faire par...
+    }
 }

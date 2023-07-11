@@ -1,8 +1,8 @@
 <div>
     <a href="ajouter-classe-chambre">Ajouter une nouvelle classe de chambre</a><br>
     <a href="ajouter-chambre">Ajouter une nouvelle chambre</a><br>
-    <a href="modifier-Classe">Modifier une classe de chambre</a><br>
-    <a href="supprimerClasse">Supprimer une classe de chambre</a><br>
+    <a href="modifier-classe">Modifier une classe de chambre</a><br>
+    <a href="supprimer-classe">Supprimer une classe de chambre</a><br>
     <a href="supprimer-chambre">Supprimer une chambre</a><br>
     <a href="ajouter-photo">Ajouter une photo</a><br>
     <a href="ajouter-video">Ajouter une video</a><br>

@@ -41,7 +41,8 @@ Route::controller(AdminControleur::class)->group(function(){
 //LES ROUTE D'UNE CLASSE DE CHAMBRE
 Route::controller(ClasseChambreController::class)->group(function(){
     Route::get('ajouter-classe-chambre', 'getFormulaireAjoutClasse');
-    Route::get('modifier-Classe', 'getFormulaireModifierClasse');
+    Route::get('modifier-classe', 'getFormulaireModifierClasse');
+    Route::get('supprimer-classe', 'getFormDelClasse');
 
     Route::post('formulaire-ajout-classe-chambre', 'ajouterClasse');
     Route::post('formulaire-modification-classe', 'modifierClasse');
