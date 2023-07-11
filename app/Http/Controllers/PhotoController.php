@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 use App\Models\Photo;
@@ -87,12 +86,18 @@ class PhotoController extends FichierController
         }
 
         //suppression des photos dans la bdd
-        DB::table('photos')->whereIn('chemin', $request->input('photo'))->delete();
-        //suppression des photos dans le dossier
-        foreach($request->input('photo') as $chemin)
-            Storage::disk('public')->delete($chemin);
+        try{
+            DB::table('photos')->whereIn('chemin', $request->input('photo'))->delete();
+            //suppression des photos dans le dossier
+            foreach($request->input('photo') as $chemin)
+                Storage::disk('public')->delete($chemin);
 
-        $_SESSION['notifHome'] = "Photo(s) supprimer avec succès";
-        return view('admin.option.home');
+            $_SESSION['notifHome'] = "Photo(s) supprimer avec succès";
+            return view('admin.option.home');
+        }catch(Exception $e){
+            $_SESSION['notifSupprimerFichier'] = "La suppression a échouée veuillez recommencer";
+            $trouver = Photo::get('chemin');
+            return view('admin.option.supprimerFichier', ['cheminPhoto' => $trouver]);
+        }
     }
 }

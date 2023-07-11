@@ -150,11 +150,7 @@ class AdminControleur extends Controller
     public function modifierChambre(Request $request){
         //à faire par...
     }
-    //methode de la suppression d'une chambre
-    public function supprimerChambre(Request $request){
-        //à faire par...
-    }
-
+    
     //methode de la suppression d'une classe
     public function supprimerClasse(Request $request){
         //à faire par...

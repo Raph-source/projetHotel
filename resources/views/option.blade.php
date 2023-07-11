@@ -3,7 +3,7 @@
     <a href="ajouter-chambre">Ajouter une nouvelle chambre</a><br>
     <a href="modifier-Classe">Modifier une classe de chambre</a><br>
     <a href="supprimerClasse">Supprimer une classe de chambre</a><br>
-    <a href="supprimerChambre">Supprimer une chambre</a><br>
+    <a href="supprimer-chambre">Supprimer une chambre</a><br>
     <a href="ajouter-photo">Ajouter une photo</a><br>
     <a href="ajouter-video">Ajouter une video</a><br>
     <a href="supprimer-photo">Supprimer photos</a><br>

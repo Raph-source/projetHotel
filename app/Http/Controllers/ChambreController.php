@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
 
@@ -39,7 +40,7 @@ class ChambreController extends Controller
 
         //bloquer les injections
         $this->numPorte = htmlspecialchars($request->input('numPorte'));
-        $this->classeChambre->setNom(htmlspecialchars($request->input('classeChambre')));
+        $this->classeChambre->setAttribut(htmlspecialchars($request->input('classeChambre')));
         
         //verification que la la classe de chambre existe
         if($this->classeChambre->checkClasseChambre()){
@@ -54,12 +55,56 @@ class ChambreController extends Controller
             $chambre->idClasseChambre = $this->classeChambre->getId();
             $chambre->save();
     
-            $_SESSION['notifHome'] = "la chambre à été ajouter";
+            $_SESSION['notifHome'] = "la chambre à été ajoutée";
             return view('admin.option.home');
         }catch(QueryException $e){
             $_SESSION['notifAjoutChambre'] = "cette chambre existe déjà";
             return view('admin.option.ajouterChambre', ['classeChambre' => $this->classeChambre->getAllClasse()]);
         }
 
+    }
+
+    //methode qui renvoi le formulaire de suppression d'une chambre
+    public function getFormDelChambre(): View{
+        return view('admin.option.formDelChambre', [
+            'chambre' => DB::table('chambres')
+            ->join('classe_chambres', 'chambres.idClasseChambre', '=', 'classe_chambres.id')
+            ->select('chambres.numPorte', 'classe_chambres.nom')
+            ->get()
+            ]
+        );
+    }
+    //methode de la suppression d'une chambre
+    public function supprimerChambre(Request $request){
+        //verification des champs du formulaire
+        $validator = Validator::make($request->all(), [
+            'numPorte' => 'required',
+        ]);
+        if($validator->fails()){
+            $_SESSION['notifFormDelChambre'] = "Erreur des champs";
+            return view('admin.option.formDelChambre', [
+                'chambre' => DB::table('chambres')
+                ->join('classe_chambres', 'chambres.idClasseChambre', '=', 'classe_chambres.id')
+                ->select('chambres.numPorte', 'classe_chambres.nom')
+                ->get()
+                ]
+            );
+        }
+
+        //suppression des chambres dans la bdd
+        try{
+            DB::table('chambres')->whereIn('numPorte', $request->input('numPorte'))->delete();
+            $_SESSION['notifHome'] = "la chambre à été supprimée";
+            return view('admin.option.home');
+        }catch(Exeception $e){
+            $_SESSION['notifFormDelChambre'] = "Echec de la suppression veuillez recommencer";
+            return view('admin.option.formDelChambre', [
+                'chambre' => DB::table('chambres')
+                ->join('classe_chambres', 'chambres.idClasseChambre', '=', 'classe_chambres.id')
+                ->select('chambres.numPorte', 'classe_chambres.nom')
+                ->get()
+                ]
+            );
+        }
     }
 }

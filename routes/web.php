@@ -42,6 +42,7 @@ Route::controller(AdminControleur::class)->group(function(){
 Route::controller(ClasseChambreController::class)->group(function(){
     Route::get('ajouter-classe-chambre', 'getFormulaireAjoutClasse');
     Route::get('modifier-Classe', 'getFormulaireModifierClasse');
+
     Route::post('formulaire-ajout-classe-chambre', 'ajouterClasse');
     Route::post('formulaire-modification-classe', 'modifierClasse');
 });
@@ -49,7 +50,10 @@ Route::controller(ClasseChambreController::class)->group(function(){
 //LES ROUTE D'UNE CHAMBRE
 Route::controller(ChambreController::class)->group(function(){
     Route::get('ajouter-chambre', 'getFormulaireAjouterChambre');
+    Route::get('supprimer-chambre', 'getFormDelChambre');
+
     Route::post('formulaire-ajout-chambre', 'ajouterChambre');
+    Route::post('formulaire-supprimer-chambre', 'supprimerChambre');
 });
 
 //LES ROUTE D'UNE PHOTO 
