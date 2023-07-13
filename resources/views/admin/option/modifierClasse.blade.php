@@ -3,7 +3,7 @@
 @section('body')
 
 <button id="descBouton"> modifier la description</button> <button id="prixBouton">modifier le prix</button><br>
-<?php if(isset($_SESSION['notifModifClasse'])) echo $_SESSION['notifModifClasse'];?>
+<?php if(isset($notif)) echo $notif;?>
 
 <form action="formulaire-modification-classe" method="post" id="formulaire">
     @csrf <br>

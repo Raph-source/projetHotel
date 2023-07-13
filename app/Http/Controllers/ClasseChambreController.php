@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
 
 use App\Models\ClasseChambre;
-use App\Http\Controllers\PhotoContoller;
+use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\ChambreController;
 
@@ -17,15 +17,6 @@ class ClasseChambreController extends Controller
     private $nom;
     private $description;
     private $prix;
-    private $photo;
-    private $video;
-    private $chambre;
-
-    public function __construct(){
-        $this->photo = new PhotoController();
-        $this->video = new VideoController();
-        $this->chambre = new ChambreController();
-    }
 
     public function setAttribut($nom = null, $description = null, $prix = null): void{
         $this->nom = $nom;
@@ -50,8 +41,7 @@ class ClasseChambreController extends Controller
             'prix' => 'required|numeric'
         ]);
         if($validator->fails()){
-            $_SESSION['notifAjoutClasse'] = "Erreur des champs";
-            return view('admin.option.ajouterClasse');
+            return view('admin.option.ajouterClasse', ['notif' => "Erreur des champs"]);
         }
         
         //bloquer les injections
@@ -68,12 +58,10 @@ class ClasseChambreController extends Controller
         $classeChambre->description = $this->description;
         $classeChambre->prix = $this->prix;
         $classeChambre->save();
-        $_SESSION['notifHome'] = 'la classe à été ajoutée';
-        return view('admin.option.home');
+        return view('admin.option.home', ['notif' => 'la classe à été ajoutée']);
 
       }catch(QueryException $e){
-        $_SESSION['notifAjoutClasse'] = "Ne mettez les informations existant dans une autre classe de chambre";
-        return view('admin.option.ajouterClasse');
+        return view('admin.option.ajouterClasse', ['notif' => "Ne mettez les informations existant dans une autre classe de chambre"]);
       } 
     }
 
@@ -90,8 +78,10 @@ class ClasseChambreController extends Controller
             'nouvPrix' => 'numeric'
         ]);
         if($validator->fails()){
-            $_SESSION['notifModifClasse'] = "Erreur des champs";
-            return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambreController::getAllClasse()]);
+            return view('admin.option.modifierClasse', [
+                'classeChambre' => ClasseChambreController::getAllClasse(),
+                'notif' => "Erreur des champs"
+            ]);
         }
         //bloquer les injections
         $classeChambre = strtoupper(htmlspecialchars($request->input('classeChambre')));
@@ -100,10 +90,11 @@ class ClasseChambreController extends Controller
         ClasseChambreController::setAttribut($classeChambre, $nouvDesc, $nouvPrix);
 
         //verification de la validité de la classe
-        $trouver = ClasseChambre::where('nom', '=', $this->nom)->get();
-        if(count($trouver) == 0){
-            $_SESSION['notifModifClasse'] = "cette classe n'existe pas";
-            return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambreController::getAllClasse()]);            
+        if(ClasseChambre::checkClasseChambre()){
+            return view('admin.option.modifierClasse', [
+                'classeChambre' => ClasseChambreController::getAllClasse(),
+                'notif' => "cette classe n'existe pas" 
+            ]);            
         }
 
         //récuperation de l'id de classe
@@ -116,8 +107,10 @@ class ClasseChambreController extends Controller
                     'description' => $nouvDesc,
                 ]);
             }catch(QueryException $e){
-                $_SESSION['notifModifClasse'] = "N'inserer pas une description qui existe ou une description null";
-                return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambreController::getAllClasse()]);            
+                return view('admin.option.modifierClasse', [
+                    'classeChambre' => ClasseChambreController::getAllClasse(),
+                    'notif' => "N'inserer pas une description qui existe ou une description null" 
+                ]);            
             }
            
         if($request->has('nouvPrix'))
@@ -126,20 +119,22 @@ class ClasseChambreController extends Controller
                     'prix' => $nouvPrix,
                 ]);
             }catch(QueryException $e){
-                $_SESSION['notifModifClasse'] = "N'inserer pas un prix existe qui ou un prix null";
-                return view('admin.option.modifierClasse', ['classeChambre' => ClasseChambreController::getAllClasse()]);            
+                return view('admin.option.modifierClasse', [
+                    'classeChambre' => ClasseChambreController::getAllClasse(),
+                    'notif' => "N'inserer pas un prix existe qui ou un prix null" 
+                ]);             
             }            
             
         
         //si l'admin ne change ni le prix ni la description
         if(!$request->has('nouvDesc') && !$request->has('nouvPrix')){
-            $_SESSION['notifModifClasse'] = "Veuillez choisir quoi modifier, soit la description, soit le prix ou encore le deux";
-            return view('admin.option.modifierClasse', ['classeChambre' => ClasClasseChambreControllerseChambre::getAllClasse()]);
-        
+            return view('admin.option.modifierClasse', [
+                'classeChambre' => ClasseChambreController::getAllClasse(),
+                'notif' => "Veuillez choisir quoi modifier, soit la description, soit le prix ou encore le deux" 
+            ]);        
         }
         
-        $_SESSION['notifHome'] = "classe mofifiée avec succès";
-        return view('admin.option.home');
+        return view('admin.option.home', ['notif' => "classe mofifiée avec succès"]);
     }
 
     //méthode qui retourne l'id d'une classe de chambre
@@ -169,14 +164,16 @@ class ClasseChambreController extends Controller
     }
 
     //méthode de la suppression d'une classe
-    public function supprimerClasse(Request $request): View{
+    public function supprimerClasse(Request $request, PhotoController $photo, VideoController $video, ChambreController $chambre): View{
         //verification des champs du formulaire
         $validator = Validator::make($request->all(), [
             'classe' => 'required'
         ]);
         if($validator->fails()){
-            $_SESSION['notifFormDelClasse'] = "Erreur des champs";
-            return view('admin.option.formDelClasse', ['classe' => ClasseChambreController::getAllClasse()]);
+            return view('admin.option.formDelClasse', [
+                'classe' => ClasseChambreController::getAllClasse(),
+                'notif' => "Erreur des champs"
+            ]);        
         }
 
         //suppression
@@ -185,17 +182,18 @@ class ClasseChambreController extends Controller
 
             $idClasseChambre = ClasseChambreController::getId();
 
-            $deletePhoto = $this->photo->deleteFileByIdClasseChambre($idClasseChambre);
-            $deleteVideo = $this->video->deleteFileByIdClasseChambre($idClasseChambre);
-            $deleteChambre = $this->chambre->deleteChambreByIdClasseChambre($idClasseChambre);
+            $photo->deleteFileByIdClasseChambre($idClasseChambre);
+            $video->deleteFileByIdClasseChambre($idClasseChambre);
+            $chambre->deleteChambreByIdClasseChambre($idClasseChambre);
 
             ClasseChambre::where('id', '=', $idClasseChambre)->delete();
-            $_SESSION['notifHome'] = 'la classe à été supprimée';
-            return view('admin.option.home');
+            return view('admin.option.home', ['notif' => "la classe à été supprimée"]);
         }
         else{
-            $_SESSION['notifFormDelClasse'] = "cette classe n'existe pas";
-            return view('admin.option.formDelClasse', ['classe' => ClasseChambreController::getAllClasse()]);
+            return view('admin.option.formDelClasse', [
+                'classe' => ClasseChambreController::getAllClasse(),
+                'notif' => "cette classe n'existe pas"
+            ]);
         }
         
     }

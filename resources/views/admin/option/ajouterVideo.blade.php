@@ -1,7 +1,7 @@
 @extends('structureHTML')
 @section('title', 'Home')
 @section('body')
-<?php if(isset($_SESSION['notifVideo'])) echo $_SESSION['notifVideo']; ?>
+<?php if(isset($notif)) echo $notif; ?>
 <form action="formulaire-ajout-video" method="post" enctype="multipart/form-data">
     @csrf <br>
     <label for="classeChambre">Choisir la classe pour laquelle vous ajouter la video</label><br>

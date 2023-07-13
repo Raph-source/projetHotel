@@ -1,8 +1,7 @@
 @extends('structureHTML')
 @section('title', 'Home')
 @section('body')
-<?php if(isset($_SESSION['notifFormDelChambre'])) echo $_SESSION['notifFormDelChambre']; 
-/*dd($chambre);*/?>
+<?php if(isset($notif)) echo $notif;?>
 <form action="formulaire-supprimer-chambre" id="formulaire" method="post">
     @csrf <br>
     @foreach ($chambre as $room)

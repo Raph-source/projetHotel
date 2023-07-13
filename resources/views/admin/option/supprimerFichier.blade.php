@@ -2,7 +2,7 @@
 @extends('structureHTML')
 @section('title', 'Home')
 @section('body')
-    <?php if(isset($_SESSION['notifSupprimerFichier'])) echo $_SESSION['notifSupprimerFichier']; ?>
+    <?php if(isset($notif)) echo $notif; ?>
     @if (isset($cheminPhoto))
         <form action="formulaire-supprimer-photo" method="post" id="formulaire">
             @csrf <br>

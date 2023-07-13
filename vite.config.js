@@ -8,7 +8,8 @@ export default defineConfig({
                 'resources/css/app.css', 
                 'resources/js/app.js',
                 'resources/js/admin/modifierClasse.js',
-                'resources/js/admin/supprimerFichier.js'
+                'resources/js/admin/supprimerFichier.js',
+                'resources/js/admin/supprimerClasse.js'
             ],
             refresh: true,
         }),

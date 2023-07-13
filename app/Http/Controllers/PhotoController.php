@@ -19,13 +19,17 @@ class PhotoController extends FichierController
             'photo' => 'image|required'
         ]);
         if($validator->fails()){
-            $_SESSION['notifImage'] = "Erreur des champs";
-            return view('admin.option.ajouterPhoto', ['classeChambre' => $this->classeChambre->getAllClasse()]);    
+            return view('admin.option.ajouterPhoto', [
+                'classeChambre' => $this->classeChambre->getAllClasse(),
+                'notif' => "Erreur des champs"
+            ]);    
         }
         //verification que l'image ne contienne pas d'erreurs
         if($request->file('photo')->getError()){
-            $_SESSION['notifImage'] = "votre image contient des erreurs";
-            return view('admin.option.ajouterPhoto', ['classeChambre' => $this->classeChambre->getAllClasse()]);
+            return view('admin.option.ajouterPhoto', [
+                'classeChambre' => $this->classeChambre->getAllClasse(),
+                'notif' =>  "votre image contient des erreurs"
+            ]); 
         }
 
         //sauvegarde de la photo dans le dossier et la bdd
@@ -38,8 +42,7 @@ class PhotoController extends FichierController
         $photo->idClasseChambre = $this->classeChambre->getId();
         $photo->save();
 
-        $_SESSION['notifHome'] = "l'image ajouter avec succès";
-        return view('admin.option.home');
+        return view('admin.option.home', ['notif' => "l'image ajouter avec succès"]);
     }
 
     //la méthode renvoi le formulaire du choix d'une classe lors de la suppression d'un fichier
@@ -61,10 +64,10 @@ class PhotoController extends FichierController
             'classeChambre' => 'required',
         ]);
         if($validator->fails()){
-            $_SESSION['notifChoixClasse'] = "Erreur des champs";
             return view('admin.option.choixClasse', [
                 'classeChambre' => $this->classeChambre->getAllClasse(),
-                'fichier' => 'photo'
+                'fichier' => 'photo',
+                'notif' => "Erreur des champs"
             ]);    
         }
         //donner le à la classe de chambre
@@ -80,9 +83,11 @@ class PhotoController extends FichierController
             'photo' => 'required'
         ]);
         if($validator->fails()){
-            $_SESSION['notifSupprimerFichier'] = "Erreur des champs";
             $trouver = Photo::get('chemin');
-            return view('admin.option.supprimerFichier', ['cheminPhoto' => $trouver]);
+            return view('admin.option.supprimerFichier', [
+                'cheminPhoto' => $trouver,
+                'notif' => "Erreur des champs"
+            ]);
         }
 
         try{
@@ -93,36 +98,33 @@ class PhotoController extends FichierController
             foreach($request->input('photo') as $chemin)
                 Storage::disk('public')->delete($chemin);
 
-            $_SESSION['notifHome'] = "Photo(s) supprimer avec succès";
-            return view('admin.option.home');
+            return view('admin.option.home', ['notif' => "Photo(s) supprimer avec succès"]);
         }catch(Exception $e){
-            $_SESSION['notifSupprimerFichier'] = "La suppression a échouée veuillez recommencer";
             $trouver = Photo::get('chemin');
-            return view('admin.option.supprimerFichier', ['cheminPhoto' => $trouver]);
+            return view('admin.option.supprimerFichier', [
+                'cheminPhoto' => $trouver,
+                'notif' => "La suppression a échouée veuillez recommencer"
+            ]);        
         }
     }
 
     //la méthode supprime tout le fchiers ayant l'id d'une classe de chambres
-    public function deleteFileByIdClasseChambre($idClassseChambre): bool{
+    public function deleteFileByIdClasseChambre($idClasseChambre): bool{
         //recherche de toute les photos de la classe de chambre
-        $trouver = Photo::where('idClasseChambre', '=', $idClassseChambre)->get('chemin');
+        $trouver = Photo::where('idClasseChambre', '=', $idClasseChambre)->get('chemin');
 
-        //suppression des photos de le dossier d'upload
         try{
+            //suppression des photos de le dossier d'upload
             foreach($trouver as $path){
                 Storage::disk('public')->delete($path['chemin']);
             }
+            //suppression des photos de la bdd
+            Photo::where('idClasseChambre', '=', $idClasseChambre)->delete();
+
             return true;
-        }catch(Exeception $e){
+        }catch(Exception $e){
             return false;
         }
 
-        //suppression des photos de la bdd
-        try{
-            Photo::where('idClasseChambre', '=', $idClassseChambre)->delete();
-            return true;
-        }catch(Exeception $e){
-            return false;
-        }
     }
 }

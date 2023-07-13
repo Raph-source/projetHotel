@@ -14,5 +14,5 @@
     <input type="submit">
 </form>
 
-<?php if(isset($_SESSION['notification'])) echo $_SESSION['notification']; ?>
+<?php if(isset($notif)) echo $notif; ?>
 @endsection

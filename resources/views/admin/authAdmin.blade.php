@@ -14,5 +14,5 @@
     <a href="mot-de-passe-oublié"> j'ai oublié le mot de passe</a><br>
     <input type="submit">
 </form>
-<?php if(isset($_SESSION['notifAuth'])) echo $_SESSION['notifAuth'];?>
+<?php if(isset($notif)) echo $notif;?>
 @endsection

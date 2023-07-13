@@ -1,7 +1,7 @@
 @extends('structureHTML')
 @section('title', 'Home')
 @section('body')
-<?php if(isset($_SESSION['notifChoixClasse'])) echo $_SESSION['notifChoixClasse'];?>
+<?php if(isset($notif)) echo $notif;?>
 <form action="formulaire-choix-classe-{{$fichier}}" method="post">
     @csrf <br>
     <label for="classeClasse">choisir une classe</label>

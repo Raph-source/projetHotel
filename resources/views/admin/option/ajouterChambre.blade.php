@@ -1,7 +1,7 @@
 @extends('structureHTML')
 @section('title', 'Home')
 @section('body')
-<?php if(isset($_SESSION['notifAjoutChambre'])) echo $_SESSION['notifAjoutChambre'];?>
+<?php if(isset($notif)) echo $notif;?>
 <form action="formulaire-ajout-chambre" method="post">
     @csrf <br>
     <label for="numPorte">Inserer le num de la porte: </label>

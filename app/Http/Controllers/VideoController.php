@@ -20,13 +20,17 @@ class VideoController extends FichierController
             'video' => 'mimetypes:video/mp4,video/avi,video/mpeg|required'
         ]);
         if($validator->fails()){
-            $_SESSION['notifVideo'] = "Erreur des champs";
-            return view('admin.option.ajouterVideo', ['classeChambre' => $this->classeChambre->getAllClasse()]);    
+            return view('admin.option.ajouterVideo', [
+                'classeChambre' => $this->classeChambre->getAllClasse(),
+                'notif' => "Erreur des champs"
+            ]);
         }
         //verification que la video ne contienne pas d'erreurs
         if($request->file('video')->getError()){
-            $_SESSION['notifVideo'] = "votre video contient des erreurs";
-            return view('admin.option.ajouterVideo', ['classeChambre' => $this->classeChambre->getAllClasse()]);
+            return view('admin.option.ajouterVideo', [
+                'classeChambre' => $this->classeChambre->getAllClasse(),
+                'notif' => "votre video contient des erreurs"
+            ]);        
         }
 
         //sauvegarde de la video dans le dossier et la bdd
@@ -39,8 +43,7 @@ class VideoController extends FichierController
         $video->idClasseChambre = $this->classeChambre->getId();
         $video->save();
 
-        $_SESSION['notifHome'] = "la video ajouter avec succès";
-        return view('admin.option.home');
+        return view('admin.option.home', ['notif' => "la video ajouter avec succès"]);
     }
 
     //la méthode renvoi le formulaire du choix d'une classe lors de la suppression d'un fichier
@@ -62,17 +65,17 @@ class VideoController extends FichierController
             'classeChambre' => 'required',
         ]);
         if($validator->fails()){
-            $_SESSION['notifChoixClasse'] = "Erreur des champs";
             return view('admin.option.choixClasse', [
                 'classeChambre' => $this->classeChambre->getAllClasse(),
-                'fichier' => 'video'
+                'fichier' => 'video',
+                'notif' => "Erreur des champs"
             ]);    
         }
 
         //donner le à la classe de chambre
         $this->classeChambre->setAttribut($request->input('classeChambre'));
 
-        $trouver = Video::where(['classeChambre' => $this->classeChambre->getId()])->get('chemin');
+        $trouver = Video::where(['idClasseChambre' => $this->classeChambre->getId()])->get('chemin');
         return view('admin.option.supprimerFichier', ['cheminVideo' => $trouver]);
     }
 
@@ -82,9 +85,11 @@ class VideoController extends FichierController
             'video' => 'required'
         ]);
         if($validator->fails()){
-            $_SESSION['notifSupprimerFichier'] = "Erreur des champs";
             $trouver = Video::get('chemin');
-            return view('admin.option.supprimerFichier', ['cheminVideo' => $trouver]);
+            return view('admin.option.supprimerFichier', [
+                'cheminVideo' => $trouver,
+                'notif' => "Erreur des champs"
+            ]);
         }
 
         //suppression des videos dans la bdd
@@ -93,30 +98,24 @@ class VideoController extends FichierController
         foreach($request->input('video') as $chemin)
             Storage::disk('public')->delete($chemin);
 
-        $_SESSION['notifHome'] = "Video(s) supprimer avec succès";
-        return view('admin.option.home');
+        return view('admin.option.home', ['notif' => "Video(s) supprimer avec succès"]);
     }
 
     //la méthode supprime tout le fichiers ayant l'id d'une classe de chambre
-    public function deleteFileByIdClasseChambre($idClassseChambre): bool{
+    public function deleteFileByIdClasseChambre($idClasseChambre): bool{
         //recherche de toute les photos de la classe de chambre
-        $trouver = Video::where('idClasseChambre', '=', $idClassseChambre)->get('chemin');
-
-        //suppression des videos de le dossier d'upload
+        $trouver = Video::where('idClasseChambre', '=', $idClasseChambre)->get('chemin');
+        
         try{
+            //suppression des photos de le dossier d'upload
             foreach($trouver as $path){
                 Storage::disk('public')->delete($path['chemin']);
             }
-            return true;
-        }catch(Exeception $e){
-            return false;
-        }
+            //suppression des photos de la bdd
+            Video::where('idClasseChambre', '=', $idClasseChambre)->delete();
 
-        //suppression des videos de la bdd
-        try{
-            Video::where('idClasseChambre', '=', $idClassseChambre)->delete();
             return true;
-        }catch(Exeception $e){
+        }catch(Exception $e){
             return false;
         }
     }

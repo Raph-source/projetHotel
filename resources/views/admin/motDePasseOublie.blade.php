@@ -7,5 +7,5 @@
 <label for="email">Entrez l'adresse de l'admin</label><br>
 <input type="email" name="email"><input type="submit">
 </form> 
-<?php if(isset($_SESSION['notifEmail'])) echo $_SESSION['notifEmail'];?>  
+<?php if(isset($notif)) echo $notif;?>  
 @endsection

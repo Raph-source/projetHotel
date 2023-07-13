@@ -1,7 +1,7 @@
 @extends('structureHTML')
 @section('title', 'Home')
 @section('body')
-<?php if(isset($_SESSION['notifPhoto'])) echo $_SESSION['notifPhoto']; ?>
+<?php if(isset($notif)) echo $notif; ?>
 <form action="formulaire-ajout-photo" method="post" enctype="multipart/form-data">
     @csrf <br>
     <label for="classeChambre">Choisir la classe pour laquelle vous ajouter la photo</label><br>

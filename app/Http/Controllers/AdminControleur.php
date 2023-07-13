@@ -45,8 +45,7 @@ class AdminControleur extends Controller
             'mdp' => 'required'
         ]);
         if($verifAuth->fails()){
-            $_SESSION['notification'] = 'Erreur des champs';
-            return view('admin.inscription');
+            return view('admin.inscription', ['notif' => 'Erreur des champs']);
         }
         
         //bloquer les injections
@@ -81,8 +80,7 @@ class AdminControleur extends Controller
                 'mdp' => 'required'
             ]);
             if($validator->fails()){
-                $_SESSION['notifAuth'] = 'Erreur des champs';
-                return view('admin.authAdmin');
+                return view('admin.authAdmin', ['notif' => 'Erreur des champs']);
             }
             
             //bloquer les injections
@@ -99,8 +97,7 @@ class AdminControleur extends Controller
 
                 return view('admin.option.home');
             }
-            $_SESSION['notifAuth'] = 'pseudo ou mot de passe incorrecte';
-            return view('admin.authAdmin');
+            return view('admin.authAdmin', ['notif' => 'pseudo ou mot de passe incorrecte']);
         }
        
     }
@@ -115,8 +112,7 @@ class AdminControleur extends Controller
             'email' => 'required|email'
         ]);
         if($validator->fails()){
-            $_SESSION['notifEmail'] = 'Remplissez tout les champs';
-            return view('admin.motDePasseOublie');
+            return view('admin.motDePasseOublie', ['notif' => 'Remplissez tout les champs']);
         }
 
         //bloquer les injections
@@ -132,8 +128,7 @@ class AdminControleur extends Controller
             return view('admin.authAdmin');
         }
 
-        $_SESSION['notifEmail'] = "cette adresse mail n'est pas pour l'administrateur";
-        return view('admin.motDePasseOublie');
+        return view('admin.motDePasseOublie', ['notif' => "cette adresse mail n'est pas pour l'administrateur"]);
     }
 
     //méthode permettant de chamger le mot de passe

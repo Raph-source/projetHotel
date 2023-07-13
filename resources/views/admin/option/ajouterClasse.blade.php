@@ -1,7 +1,7 @@
 @extends('structureHTML')
 @section('title', 'Home')
 @section('body')
-<?php if(isset($_SESSION['notifAjoutClasse'])) echo $_SESSION['notifAjoutClasse'] ?>
+<?php if(isset($notif)) echo $notif ?>
 <form action="formulaire-ajout-classe-chambre" method="post">
     @csrf <br>
     <label for="nom">Inserer le nom de la classe: </label>

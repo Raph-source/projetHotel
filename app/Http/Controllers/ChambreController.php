@@ -34,8 +34,10 @@ class ChambreController extends Controller
         ]);
 
         if($validator->fails()){
-            $_SESSION['notifAjoutChambre'] = "Erreur des champs";
-            return view('admin.option.ajouterChambre', ['classeChambre' => $this->classeChambre->getAllClasse()]);
+            return view('admin.option.ajouterChambre', [
+                'classeChambre' => $this->classeChambre->getAllClasse(),
+                'notif' => "Erreur des champs"
+            ]);
         }
 
         //bloquer les injections
@@ -44,8 +46,10 @@ class ChambreController extends Controller
         
         //verification que la la classe de chambre existe
         if($this->classeChambre->checkClasseChambre()){
-            $_SESSION['notifAjoutChambre'] = "cette classe chambre n'existe pas";
-            return view('admin.option.ajouterChambre', ['classeChambre' => $this->classeChambre->getAllClasse()]);
+            return view('admin.option.ajouterChambre', [
+                'classeChambre' => $this->classeChambre->getAllClasse(),
+                'notif' => "cette classe chambre n'existe pas"
+            ]);
         }
 
         //enregistrement de la chambre dans la bdd
@@ -55,11 +59,12 @@ class ChambreController extends Controller
             $chambre->idClasseChambre = $this->classeChambre->getId();
             $chambre->save();
     
-            $_SESSION['notifHome'] = "la chambre à été ajoutée";
-            return view('admin.option.home');
+            return view('admin.option.home', ['notif' => "la chambre à été ajoutée"]);
         }catch(QueryException $e){
-            $_SESSION['notifAjoutChambre'] = "cette chambre existe déjà";
-            return view('admin.option.ajouterChambre', ['classeChambre' => $this->classeChambre->getAllClasse()]);
+            return view('admin.option.ajouterChambre', [
+                'classeChambre' => $this->classeChambre->getAllClasse(),
+                'notif' => "cette chambre existe déjà"
+            ]);        
         }
 
     }
@@ -81,12 +86,12 @@ class ChambreController extends Controller
             'numPorte' => 'required',
         ]);
         if($validator->fails()){
-            $_SESSION['notifFormDelChambre'] = "Erreur des champs";
             return view('admin.option.formDelChambre', [
                 'chambre' => DB::table('chambres')
                 ->join('classe_chambres', 'chambres.idClasseChambre', '=', 'classe_chambres.id')
                 ->select('chambres.numPorte', 'classe_chambres.nom')
-                ->get()
+                ->get(),
+                'notif' => "Erreur des champs"
                 ]
             );
         }
@@ -94,15 +99,14 @@ class ChambreController extends Controller
         //suppression des chambres dans la bdd
         try{
             DB::table('chambres')->whereIn('numPorte', $request->input('numPorte'))->delete();
-            $_SESSION['notifHome'] = "la chambre à été supprimée";
-            return view('admin.option.home');
+            return view('admin.option.home', ['notif' => "la chambre à été supprimée"]);
         }catch(Exeception $e){
-            $_SESSION['notifFormDelChambre'] = "Echec de la suppression veuillez recommencer";
             return view('admin.option.formDelChambre', [
                 'chambre' => DB::table('chambres')
                 ->join('classe_chambres', 'chambres.idClasseChambre', '=', 'classe_chambres.id')
                 ->select('chambres.numPorte', 'classe_chambres.nom')
-                ->get()
+                ->get(),
+                'notif' => "Echec de la suppression veuillez recommencer"
                 ]
             );
         }

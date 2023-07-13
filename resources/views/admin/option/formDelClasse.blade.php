@@ -1,7 +1,7 @@
 @extends('structureHTML')
 @section('title', 'Home')
 @section('body')
-<?php if(isset($_SESSION['notifFormDelClasse'])) echo $_SESSION['notifFormDelClasse'];?>
+<?php if(isset($notif)) echo $notif;?>
 <form action="formulaire-supprimer-classe" id="formulaire" method="post">
     @csrf <br>
         <label for="classe">selectionnez la classe</label>
