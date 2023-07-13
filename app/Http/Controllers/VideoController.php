@@ -96,4 +96,28 @@ class VideoController extends FichierController
         $_SESSION['notifHome'] = "Video(s) supprimer avec succès";
         return view('admin.option.home');
     }
+
+    //la méthode supprime tout le fichiers ayant l'id d'une classe de chambre
+    public function deleteFileByIdClasseChambre($idClassseChambre): bool{
+        //recherche de toute les photos de la classe de chambre
+        $trouver = Video::where('idClasseChambre', '=', $idClassseChambre)->get('chemin');
+
+        //suppression des videos de le dossier d'upload
+        try{
+            foreach($trouver as $path){
+                Storage::disk('public')->delete($path['chemin']);
+            }
+            return true;
+        }catch(Exeception $e){
+            return false;
+        }
+
+        //suppression des videos de la bdd
+        try{
+            Video::where('idClasseChambre', '=', $idClassseChambre)->delete();
+            return true;
+        }catch(Exeception $e){
+            return false;
+        }
+    }
 }

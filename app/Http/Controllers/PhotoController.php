@@ -85,9 +85,10 @@ class PhotoController extends FichierController
             return view('admin.option.supprimerFichier', ['cheminPhoto' => $trouver]);
         }
 
-        //suppression des photos dans la bdd
         try{
+            //suppression des photos dans la bdd
             DB::table('photos')->whereIn('chemin', $request->input('photo'))->delete();
+
             //suppression des photos dans le dossier
             foreach($request->input('photo') as $chemin)
                 Storage::disk('public')->delete($chemin);
@@ -98,6 +99,30 @@ class PhotoController extends FichierController
             $_SESSION['notifSupprimerFichier'] = "La suppression a échouée veuillez recommencer";
             $trouver = Photo::get('chemin');
             return view('admin.option.supprimerFichier', ['cheminPhoto' => $trouver]);
+        }
+    }
+
+    //la méthode supprime tout le fchiers ayant l'id d'une classe de chambres
+    public function deleteFileByIdClasseChambre($idClassseChambre): bool{
+        //recherche de toute les photos de la classe de chambre
+        $trouver = Photo::where('idClasseChambre', '=', $idClassseChambre)->get('chemin');
+
+        //suppression des photos de le dossier d'upload
+        try{
+            foreach($trouver as $path){
+                Storage::disk('public')->delete($path['chemin']);
+            }
+            return true;
+        }catch(Exeception $e){
+            return false;
+        }
+
+        //suppression des photos de la bdd
+        try{
+            Photo::where('idClasseChambre', '=', $idClassseChambre)->delete();
+            return true;
+        }catch(Exeception $e){
+            return false;
         }
     }
 }

@@ -27,7 +27,7 @@ Route::controller(ClientController::class)->group(function(){
 
 //LES ROUTES DE L'ADMIN
 Route::controller(AdminControleur::class)->group(function(){
-    Route::get('je suis l\'admin de cette hotel', 'welcome');
+    Route::get('je suis l\'admin de cet hotel', 'welcome');
     Route::get('mot-de-passe-oublié', 'getFormulaireMdpOublie');   
     Route::get('ajouter-video', 'getFormulaireAjouterVideo');
 
@@ -46,6 +46,7 @@ Route::controller(ClasseChambreController::class)->group(function(){
 
     Route::post('formulaire-ajout-classe-chambre', 'ajouterClasse');
     Route::post('formulaire-modification-classe', 'modifierClasse');
+    Route::post('formulaire-supprimer-classe', 'supprimerClasse');
 });
 
 //LES ROUTE D'UNE CHAMBRE

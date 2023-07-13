@@ -8,24 +8,36 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
 
 use App\Models\ClasseChambre;
+use App\Http\Controllers\PhotoContoller;
+use App\Http\Controllers\VideoController;
+use App\Http\Controllers\ChambreController;
 
 class ClasseChambreController extends Controller
 {
     private $nom;
     private $description;
     private $prix;
+    private $photo;
+    private $video;
+    private $chambre;
 
-    public function setAttribut($nom = null, $description = null, $prix = null){
+    public function __construct(){
+        $this->photo = new PhotoController();
+        $this->video = new VideoController();
+        $this->chambre = new ChambreController();
+    }
+
+    public function setAttribut($nom = null, $description = null, $prix = null): void{
         $this->nom = $nom;
         $this->description = $description;
         $this->prix = $prix;
     }
 
-    public function getnom(){
+    public function getnom(): string{
         return $this->nom;
     }
     //cette méthode renvoie le formulaire d'ajout d'une classe
-    function getFormulaireAjoutClasse(){
+    function getFormulaireAjoutClasse(): View{
         return view('admin.option.ajouterClasse');
     }
 
@@ -71,7 +83,7 @@ class ClasseChambreController extends Controller
     }
 
     //methode de la modification d'une classe
-    public function modifierClasse(Request $request){
+    public function modifierClasse(Request $request):View{
         //verification des champs du formulaire
         $validator = Validator::make($request->all(), [
             'classeChambre' => 'required',
@@ -138,7 +150,7 @@ class ClasseChambreController extends Controller
     }
 
     //cette méthode permet de verifier l'existance d'une classe de chambre
-    public function checkClasseChambre(){
+    public function checkClasseChambre(): bool{
         $trouver = ClasseChambre::where('nom', '=', $this->nom)->get();
 
         if(count($trouver) == 0)
@@ -155,8 +167,36 @@ class ClasseChambreController extends Controller
     public function getFormDelClasse(): View{
         return view('admin.option.formDelClasse', ['classe' => ClasseChambreController::getAllClasse()]);
     }
-    //methode de la suppression d'une classe
-    public function supprimerClasse(Request $request){
-        //à faire par...
+
+    //méthode de la suppression d'une classe
+    public function supprimerClasse(Request $request): View{
+        //verification des champs du formulaire
+        $validator = Validator::make($request->all(), [
+            'classe' => 'required'
+        ]);
+        if($validator->fails()){
+            $_SESSION['notifFormDelClasse'] = "Erreur des champs";
+            return view('admin.option.formDelClasse', ['classe' => ClasseChambreController::getAllClasse()]);
+        }
+
+        //suppression
+        ClasseChambreController::setAttribut($request->input('classe'));
+        if(!ClasseChambreController::checkClasseChambre()){
+
+            $idClasseChambre = ClasseChambreController::getId();
+
+            $deletePhoto = $this->photo->deleteFileByIdClasseChambre($idClasseChambre);
+            $deleteVideo = $this->video->deleteFileByIdClasseChambre($idClasseChambre);
+            $deleteChambre = $this->chambre->deleteChambreByIdClasseChambre($idClasseChambre);
+
+            ClasseChambre::where('id', '=', $idClasseChambre)->delete();
+            $_SESSION['notifHome'] = 'la classe à été supprimée';
+            return view('admin.option.home');
+        }
+        else{
+            $_SESSION['notifFormDelClasse'] = "cette classe n'existe pas";
+            return view('admin.option.formDelClasse', ['classe' => ClasseChambreController::getAllClasse()]);
+        }
+        
     }
 }

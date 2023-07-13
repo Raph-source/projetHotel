@@ -107,4 +107,14 @@ class ChambreController extends Controller
             );
         }
     }
+
+    //cette méthode supprime toute les chambres d'une classe
+    public function deleteChambreByIdClasseChambre($idClasseChambre): bool{
+        try{
+            Chambre::where('idClasseChambre', '=', $idClasseChambre)->delete();
+            return true;
+        }catch(Exeception $e){
+            return false;
+        }
+    }
 }
