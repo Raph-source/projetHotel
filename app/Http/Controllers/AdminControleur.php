@@ -131,9 +131,35 @@ class AdminControleur extends Controller
         return view('admin.motDePasseOublie', ['notif' => "cette adresse mail n'est pas pour l'administrateur"]);
     }
 
+    //cette méthode renvoi le formulaire du chngement de pwd
+    public function getFormChangeMdp(): View{
+        return view('admin.option.formChangePwd');
+    }
     //méthode permettant de chamger le mot de passe
-    public function changerMdp(Request $request){
-        //à faire par GLORIA, bonne chance...
+    public function changerMdp(Request $request): View{
+        //verification des champs du formulaire
+        $validator = Validator::make($request->all(), [
+            'oldPwd' => 'required',
+            'newPwd' => 'required',
+            'conNewPwd' => 'required'
+        ]);
+        if($validator->fails())
+            return view('admin.option.formChangePwd', ['notif' => 'Remplissez tout les champs']);
+        
+        $trouver = Admin::where('mdp', $request->input('oldPwd'))->get();
+        if(count($trouver) == 0)
+            return view('admin.option.formChangePwd', ['notif' => 'Mot de passe incorrecte']);
+
+        if($request->input('newPwd') != $request->input('conNewPwd'))
+            return view('admin.option.formChangePwd', ['notif' => 'Erreur!!! i y à une diffèrence entre
+            le nouveau mot de passe et la confiemation']);
+
+        try{
+            Admin::where('mdp', $request->input('oldPwd'))->update(['mdp' => $request->input('newPwd')]);
+            return view('admin.option.home', ['notif' => 'mot de passe changé avec succès']);
+        }catch(Exception $e){
+            return view('admin.option.formChangePwd', ['notif' => 'Echec veuillez recommencer']);
+        }
     }
 
     //methode du changement d'etat d'une chambre
@@ -141,6 +167,11 @@ class AdminControleur extends Controller
         //à faire par...
     }
 
+    //deconnexion
+    public function deconnexion(): View{
+        session_destroy();
+        return view('admin.authAdmin');
+    }
     //cette méthode vérifie si pseudo et le mot de passe de l'admin sont dans la base de donnée ou pas
     private function verifAuth($pseudo, $mdp): bool{
         $admin = new Admin;

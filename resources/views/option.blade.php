@@ -9,6 +9,6 @@
     <a href="supprimer-photo">Supprimer photos</a><br>
     <a href="supprimer-video">Supprimer videos</a><br>
     <a href="changerEtat">Changer l'etat d'une chambre</a><br>
-    <a href="changerMdp">Changer le mot de passe</a><br>
+    <a href="changer-pwd">Changer le mot de passe</a><br>
     <a href="deconnexion">Deconnexion</a><br>
 </div>

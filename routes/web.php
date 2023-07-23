@@ -30,12 +30,15 @@ Route::controller(AdminControleur::class)->group(function(){
     Route::get('je suis l\'admin de cet hotel', 'welcome');
     Route::get('mot-de-passe-oublié', 'getFormulaireMdpOublie');   
     Route::get('ajouter-video', 'getFormulaireAjouterVideo');
+    Route::get('changer-pwd', 'getFormChangeMdp');
+    Route::get('deconnexion', 'deconnexion');
 
     Route::post('formulaire-inscription', 'inscription');
     Route::post('formulaire-authentification', 'authentification');
     Route::post('formulaire-de-passe-oublié', 'recupererMdp');
     Route::post('formulaire-ajout-video', 'ajouterVideo');    
     Route::post('formulaire-suppimer-fichier', 'supprimerFichier');
+    Route::post('formualaire-change-pwd', 'changerMdp');
 });
 
 //LES ROUTE D'UNE CLASSE DE CHAMBRE

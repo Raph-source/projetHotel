@@ -121,4 +121,15 @@ class ChambreController extends Controller
             return false;
         }
     }
+
+    //cettee fonction renvoi toute les chambres disponibles
+    public function getAllChambre(){
+        return DB::table('chambres')
+                ->outJoin('reservations', 'reservations.idChambre', 'chambres.id')
+                ->outJoin('occupations', 'occupations.idChambre', 'chambres.id')
+                ->join('classe_chambres', 'classe_chambres.id', 'chambres.idClasseChambre')
+                ->join('photos', 'photos.idClasseChambre', 'classe_chambres.id')
+                ->join('videos', 'videos.idClasseChambre', 'classe_chambres.id')
+                ->get();
+    }
 }
