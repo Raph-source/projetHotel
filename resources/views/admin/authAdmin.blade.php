@@ -12,7 +12,7 @@
     <label for="connexionAuto">Se connecter automatiquement</label>
     <input type="radio" name="connexionAuto" id=""><br>
     <a href="mot-de-passe-oublié"> j'ai oublié le mot de passe</a><br>
-    <input type="submit" style= "background-color:red">
+    <input type="submit" style= "background-color:blue">
 </form>
 <?php if(isset($notif)) echo $notif;?>
 @endsection
