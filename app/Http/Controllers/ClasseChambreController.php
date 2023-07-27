@@ -11,6 +11,8 @@ use App\Models\ClasseChambre;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\ChambreController;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ClasseChambreController extends Controller
 {
@@ -195,6 +197,20 @@ class ClasseChambreController extends Controller
                 'notif' => "cette classe n'existe pas"
             ]);
         }
-        
+    }
+
+    //cettee fonction renvoi toute les classes des chambres disponibles
+    public function getAllClasseForClient(): Collection{
+        return DB::table('classe_chambres')
+                ->join('photos', 'photos.idClasseChambre', 'classe_chambres.id')
+                ->join('videos', 'videos.idClasseChambre', 'classe_chambres.id')
+                ->select(
+                    'classe_chambres.nom',
+                    'classe_chambres.prix',
+                    'classe_chambres.description',
+                    'photos.chemin as cheminPhoto',
+                    'videos.chemin as cheminVideo'
+                    )
+                ->get();
     }
 }

@@ -7,6 +7,8 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
+
 
 use App\Models\Chambre;
 
@@ -122,14 +124,4 @@ class ChambreController extends Controller
         }
     }
 
-    //cettee fonction renvoi toute les chambres disponibles
-    public function getAllChambre(){
-        return DB::table('chambres')
-                ->outJoin('reservations', 'reservations.idChambre', 'chambres.id')
-                ->outJoin('occupations', 'occupations.idChambre', 'chambres.id')
-                ->join('classe_chambres', 'classe_chambres.id', 'chambres.idClasseChambre')
-                ->join('photos', 'photos.idClasseChambre', 'classe_chambres.id')
-                ->join('videos', 'videos.idClasseChambre', 'classe_chambres.id')
-                ->get();
-    }
 }
